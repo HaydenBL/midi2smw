@@ -7,16 +7,50 @@ import (
 	"os"
 )
 
-type Type uint8
+var (
+	globalTempo uint32 = 0
+	globalBPM   uint32 = 0
+)
+
+type EventType uint8
 
 const (
-	NoteOff Type = 0
-	NoteOn  Type = 1
-	Other   Type = 3
+	NoteOff EventType = 0
+	NoteOn  EventType = 1
+	Other   EventType = 3
+)
+
+const (
+	MetaSequence          uint8 = 0x00
+	MetaText              uint8 = 0x01
+	MetaCopyright         uint8 = 0x02
+	MetaTrackName         uint8 = 0x03
+	MetaInstrumentName    uint8 = 0x04
+	MetaLyrics            uint8 = 0x05
+	MetaMarker            uint8 = 0x06
+	MetaCuePoint          uint8 = 0x07
+	MetaChannelPrefix     uint8 = 0x20
+	MetaEndOfTrack        uint8 = 0x2F
+	MetaSetTempo          uint8 = 0x51
+	MetaSMPTEOffset       uint8 = 0x54
+	MetaTimeSignature     uint8 = 0x58
+	MetaKeySignature      uint8 = 0x59
+	MetaSequencerSpecific uint8 = 0x7F
+)
+
+const (
+	VoiceNoteOff         uint8 = 0x80
+	VoiceNoteOn          uint8 = 0x90
+	VoiceAftertouch      uint8 = 0xA0
+	VoiceControlChange   uint8 = 0xB0
+	VoiceProgramChange   uint8 = 0xC0
+	VoiceChannelPressure uint8 = 0xD0
+	VoicePitchBend       uint8 = 0xE0
+	SystemExclusive      uint8 = 0xF0
 )
 
 type MidiEvent struct {
-	event     Type
+	event     EventType
 	key       uint8
 	velocity  uint8
 	deltaTick uint32
@@ -37,18 +71,6 @@ type MidiTrack struct {
 	maxNote    uint8
 	minNote    uint8
 }
-
-// midi events
-const (
-	VoiceNoteOff         uint8 = 0x80
-	VoiceNoteOn          uint8 = 0x90
-	VoiceAftertouch      uint8 = 0xA0
-	VoiceControlChange   uint8 = 0xB0
-	VoiceProgramChange   uint8 = 0xC0
-	VoiceChannelPressure uint8 = 0xD0
-	VoicePitchBend       uint8 = 0xE0
-	SystemExclusive      uint8 = 0xF0
-)
 
 func main() {
 	parseFile("dean_town.mid")
@@ -96,8 +118,10 @@ func parseFile(fileName string) {
 
 	numTracks := parseHeader(file)
 
+	var midiTracks []MidiTrack
 	for track := 0; track < int(numTracks); track++ {
-		parseTrack(file)
+		track := parseTrack(file)
+		midiTracks = append(midiTracks, track)
 	}
 
 }
@@ -121,11 +145,10 @@ func parseHeader(file *os.File) (numTrackChunks uint16) {
 	return numTrackChunks
 }
 
-func parseTrack(file *os.File) {
+func parseTrack(file *os.File) MidiTrack {
 	fmt.Println("----- TRACK FOUND -----")
 
 	var val32 uint32 = 0
-	var val16 uint16 = 0
 	var eof bool = false
 
 	// Read track header
@@ -135,10 +158,11 @@ func parseTrack(file *os.File) {
 	if err := binary.Read(file, binary.BigEndian, &val32); err != nil {
 		eof = err == io.EOF
 	}
-	trackLength := val32
 
 	var endOfTrack = false
 	var previousStatus uint8 = 0
+
+	track := MidiTrack{}
 
 	for !endOfTrack && !eof {
 		var statusTimeDelta uint32 = 0
@@ -157,71 +181,213 @@ func parseTrack(file *os.File) {
 		}
 
 		if (status & 0xF0) == VoiceNoteOff {
-			var channel, noteID, noteVelocity uint8
+			//var channel uint8
+			var noteID, noteVelocity uint8
 			previousStatus = status
-			channel = status & 0x0F
-			binary.Read(file, binary.BigEndian, noteID)
-			if err := binary.Read(file, binary.BigEndian, noteVelocity); err != nil {
+			//channel = status & 0x0F
+
+			binary.Read(file, binary.BigEndian, &noteID)
+			if err := binary.Read(file, binary.BigEndian, &noteVelocity); err != nil {
 				eof = err == io.EOF
 			}
 
+			track.events = append(track.events, MidiEvent{NoteOff, noteID, noteVelocity, statusTimeDelta})
+
 		} else if (status & 0xF0) == VoiceNoteOn {
-			var channel, noteID, noteVelocity uint8
+			//var channel uint8
+			var noteID, noteVelocity uint8
 			previousStatus = status
-			channel = status & 0x0F
-			binary.Read(file, binary.BigEndian, noteID)
-			if err := binary.Read(file, binary.BigEndian, noteVelocity); err != nil {
+			//channel = status & 0x0F
+			binary.Read(file, binary.BigEndian, &noteID)
+			if err := binary.Read(file, binary.BigEndian, &noteVelocity); err != nil {
 				eof = err == io.EOF
+			}
+
+			if noteVelocity == 0 {
+				track.events = append(track.events, MidiEvent{NoteOff, noteID, noteVelocity, statusTimeDelta})
+			} else {
+				track.events = append(track.events, MidiEvent{NoteOn, noteID, noteVelocity, statusTimeDelta})
 			}
 
 		} else if (status & 0xF0) == VoiceAftertouch {
-			var channel, noteID, noteVelocity uint8
+			//var channel uint8
+			var noteID, noteVelocity uint8
 			previousStatus = status
-			channel = status & 0x0F
-			binary.Read(file, binary.BigEndian, noteID)
-			if err := binary.Read(file, binary.BigEndian, noteVelocity); err != nil {
+			//channel = status & 0x0F
+			binary.Read(file, binary.BigEndian, &noteID)
+			if err := binary.Read(file, binary.BigEndian, &noteVelocity); err != nil {
 				eof = err == io.EOF
 			}
+
+			track.events = append(track.events, MidiEvent{Other, 0, 0, 0})
 
 		} else if (status & 0xF0) == VoiceControlChange {
-			var channel, noteID, noteVelocity uint8
+			//var channel uint8
+			var noteID, noteVelocity uint8
 			previousStatus = status
-			channel = status & 0x0F
-			binary.Read(file, binary.BigEndian, noteID)
-			if err := binary.Read(file, binary.BigEndian, noteVelocity); err != nil {
+			//channel = status & 0x0F
+			binary.Read(file, binary.BigEndian, &noteID)
+			if err := binary.Read(file, binary.BigEndian, &noteVelocity); err != nil {
 				eof = err == io.EOF
 			}
+
+			track.events = append(track.events, MidiEvent{Other, 0, 0, 0})
 
 		} else if (status & 0xF0) == VoiceProgramChange {
-			var channel, programID uint8
+			//var channel uint8
+			var programID uint8
 			previousStatus = status
-			channel = status & 0x0F
-			if err := binary.Read(file, binary.BigEndian, programID); err != nil {
+			//channel = status & 0x0F
+			if err := binary.Read(file, binary.BigEndian, &programID); err != nil {
 				eof = err == io.EOF
 			}
+
+			track.events = append(track.events, MidiEvent{Other, 0, 0, 0})
 
 		} else if (status & 0xF0) == VoiceChannelPressure {
-			var channel, channelPressure uint8
+			//var channel uint8
+			var channelPressure uint8
 			previousStatus = status
-			channel = status & 0x0F
-			if err := binary.Read(file, binary.BigEndian, channelPressure); err != nil {
+			//channel = status & 0x0F
+			if err := binary.Read(file, binary.BigEndian, &channelPressure); err != nil {
 				eof = err == io.EOF
 			}
+
+			track.events = append(track.events, MidiEvent{Other, 0, 0, 0})
 
 		} else if (status & 0xF0) == VoicePitchBend {
-			var channel, LS7B, MS7B uint8
+			//var channel uint8
+			var LS7B, MS7B uint8
 			previousStatus = status
-			channel = status & 0x0F
-			binary.Read(file, binary.BigEndian, LS7B)
-			if err := binary.Read(file, binary.BigEndian, MS7B); err != nil {
+			//channel = status & 0x0F
+			binary.Read(file, binary.BigEndian, &LS7B)
+			if err := binary.Read(file, binary.BigEndian, &MS7B); err != nil {
 				eof = err == io.EOF
 			}
 
+			track.events = append(track.events, MidiEvent{Other, 0, 0, 0})
+
 		} else if (status & 0xF0) == SystemExclusive {
+			if status == 0xF0 {
+				//std::cout << "System Exclusive Begin: " << ReadString(ReadValue())  << std::endl;
+				fmt.Printf("System exclusive message begin: %s\n", readString(file, readValue(file)))
+			}
+
+			if status == 0xF7 {
+				fmt.Printf("System exclusive message end: %s\n", readString(file, readValue(file)))
+			}
+
+			if status == 0xFF {
+				handleMetaType(file, track)
+			}
 
 		} else {
 			fmt.Printf("Unrecognized status byte: %b\n", status)
 		}
 
 	}
+
+	return track
+}
+
+func handleMetaType(file *os.File, track MidiTrack) (endOfTrack bool) {
+	var metaType, length uint8
+
+	binary.Read(file, binary.BigEndian, &metaType)
+	length = uint8(readValue(file))
+
+	switch metaType {
+
+	case MetaSequence:
+		var val1, val2 uint8
+		binary.Read(file, binary.BigEndian, &val1)
+		binary.Read(file, binary.BigEndian, &val2)
+		fmt.Printf("Sequence number: %d %d\n", val1, val2)
+
+	case MetaText:
+		fmt.Printf("Meta text: %s\n", readString(file, uint32(length)))
+
+	case MetaCopyright:
+		fmt.Printf("Copyright: %s\n", readString(file, uint32(length)))
+
+	case MetaTrackName:
+		track.name = readString(file, uint32(length))
+		fmt.Printf("Track name: %s\n", track.name)
+
+	case MetaInstrumentName:
+		track.instrument = readString(file, uint32(length))
+		fmt.Printf("Instrument name: %s\n", track.instrument)
+
+	case MetaLyrics:
+		fmt.Printf("Lyrics: %s\n", readString(file, uint32(length)))
+
+	case MetaMarker:
+		fmt.Printf("Marker: %s\n", readString(file, uint32(length)))
+
+	case MetaCuePoint:
+		fmt.Printf("Cue: %s\n", readString(file, uint32(length)))
+
+	case MetaChannelPrefix:
+		var prefix uint8
+		binary.Read(file, binary.BigEndian, &prefix)
+		fmt.Printf("Prefix: %s\n", prefix)
+
+	case MetaEndOfTrack:
+		endOfTrack = true
+
+	case MetaSetTempo:
+		// Tempo is in microseconds per quarter note
+		if globalTempo == 0 {
+			var b uint8
+			binary.Read(file, binary.BigEndian, &b)
+			globalTempo |= uint32(b) << 16
+			binary.Read(file, binary.BigEndian, &b)
+			globalTempo |= uint32(b) << 8
+			binary.Read(file, binary.BigEndian, &b)
+			globalTempo |= uint32(b) << 0
+			globalBPM = 60000000 / globalTempo
+
+			fmt.Printf("Tempo: %d (%d bpm)\n", globalTempo, globalBPM)
+		}
+
+	case MetaSMPTEOffset:
+		var h, m, s, fr, ff uint8
+		binary.Read(file, binary.BigEndian, &h)
+		binary.Read(file, binary.BigEndian, &m)
+		binary.Read(file, binary.BigEndian, &s)
+		binary.Read(file, binary.BigEndian, &fr)
+		binary.Read(file, binary.BigEndian, &ff)
+		fmt.Printf("SMPTE: H: %d M: %d S: %d FR: %d FF: %d\n", h, m, s, fr, ff)
+
+	case MetaTimeSignature:
+		var val1, val2 uint8
+
+		binary.Read(file, binary.BigEndian, &val1)
+		binary.Read(file, binary.BigEndian, &val2)
+		fmt.Printf("Time signature: %d/%d\n", val1, val2)
+
+		binary.Read(file, binary.BigEndian, &val1)
+		fmt.Printf("Clocks per tick: %d\n", val1)
+
+		// A MIDI "Beat" is 24 ticks, so specify how many 32nd notes constitute a beat
+		binary.Read(file, binary.BigEndian, &val1)
+		fmt.Printf("32per24Clocks: %d\n", val1)
+
+	case MetaKeySignature:
+		var keySignature, minorKey uint8
+		binary.Read(file, binary.BigEndian, &keySignature)
+		binary.Read(file, binary.BigEndian, &minorKey)
+
+		fmt.Printf("Key signature: %s\n", keySignature)
+		fmt.Printf("Minor key: %s\n", minorKey)
+
+	case MetaSequencerSpecific:
+		fmt.Printf("Sequencer specific: %s", readString(file, uint32(length)))
+
+	default:
+		fmt.Printf("Unrecognized MetaEvent: %x\n", metaType)
+
+	}
+
+	return
 }
