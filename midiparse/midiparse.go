@@ -1,4 +1,4 @@
-package main
+package midiparse
 
 import (
 	"encoding/binary"
@@ -72,8 +72,21 @@ type MidiTrack struct {
 	minNote    uint8
 }
 
-func main() {
-	parseFile("MIDI_sample.mid")
+func Parse(fileName string) {
+	file, err := os.Open(fileName)
+	if err != nil {
+		fmt.Println("Error reading file", err)
+		return
+	}
+	defer file.Close()
+
+	numTracks := parseHeader(file)
+
+	var midiTracks []MidiTrack
+	for track := 0; track < int(numTracks); track++ {
+		track := parseTrack(file)
+		midiTracks = append(midiTracks, track)
+	}
 }
 
 func readString(file *os.File, length uint32) string {
@@ -108,24 +121,6 @@ func readValue(file *os.File) uint32 {
 	return finalValue
 }
 
-func parseFile(fileName string) {
-	file, err := os.Open(fileName)
-	if err != nil {
-		fmt.Println("Error reading file", err)
-		return
-	}
-	defer file.Close()
-
-	numTracks := parseHeader(file)
-
-	var midiTracks []MidiTrack
-	for track := 0; track < int(numTracks); track++ {
-		track := parseTrack(file)
-		midiTracks = append(midiTracks, track)
-	}
-
-}
-
 func parseHeader(file *os.File) (numTrackChunks uint16) {
 	var val32 uint32 = 0
 	var val16 uint16 = 0
@@ -149,7 +144,7 @@ func parseTrack(file *os.File) MidiTrack {
 	fmt.Println("----- TRACK FOUND -----")
 
 	var val32 uint32 = 0
-	var eof bool = false
+	var eof = false
 
 	// Read track header
 	// First 4 bytes, file ID (always MTrk)
@@ -272,7 +267,6 @@ func parseTrack(file *os.File) MidiTrack {
 		} else if (status & 0xF0) == SystemExclusive {
 			previousStatus = 0
 			if status == 0xF0 {
-				//std::cout << "System Exclusive Begin: " << ReadString(ReadValue())  << std::endl;
 				fmt.Printf("System exclusive message begin: %s\n", readString(file, readValue(file)))
 			}
 
@@ -281,7 +275,7 @@ func parseTrack(file *os.File) MidiTrack {
 			}
 
 			if status == 0xFF {
-				eof = handleMetaType(file, track)
+				endOfTrack = handleMetaType(file, track)
 			}
 
 		} else {
@@ -333,7 +327,7 @@ func handleMetaType(file *os.File, track MidiTrack) (endOfTrack bool) {
 	case MetaChannelPrefix:
 		var prefix uint8
 		binary.Read(file, binary.BigEndian, &prefix)
-		fmt.Printf("Prefix: %s\n", prefix)
+		fmt.Printf("Prefix: %d\n", prefix)
 
 	case MetaEndOfTrack:
 		endOfTrack = true
