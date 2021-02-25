@@ -73,7 +73,7 @@ type MidiTrack struct {
 }
 
 func main() {
-	parseFile("dean_town.mid")
+	parseFile("MIDI_sample.mid")
 }
 
 func readString(file *os.File, length uint32) string {
@@ -169,7 +169,9 @@ func parseTrack(file *os.File) MidiTrack {
 		var status uint8 = 0
 
 		statusTimeDelta = readValue(file)
-		binary.Read(file, binary.BigEndian, &status)
+		if err := binary.Read(file, binary.BigEndian, &status); err != nil {
+			eof = err == io.EOF
+		}
 
 		// Sometimes midi files optimize data by putting consecutive midi events with the same
 		// status byte next to each other, not repeating the status bytes.
@@ -223,11 +225,11 @@ func parseTrack(file *os.File) MidiTrack {
 
 		} else if (status & 0xF0) == VoiceControlChange {
 			//var channel uint8
-			var noteID, noteVelocity uint8
+			var controlID, controlValue uint8
 			previousStatus = status
 			//channel = status & 0x0F
-			binary.Read(file, binary.BigEndian, &noteID)
-			if err := binary.Read(file, binary.BigEndian, &noteVelocity); err != nil {
+			binary.Read(file, binary.BigEndian, &controlID)
+			if err := binary.Read(file, binary.BigEndian, &controlValue); err != nil {
 				eof = err == io.EOF
 			}
 
@@ -268,6 +270,7 @@ func parseTrack(file *os.File) MidiTrack {
 			track.events = append(track.events, MidiEvent{Other, 0, 0, 0})
 
 		} else if (status & 0xF0) == SystemExclusive {
+			previousStatus = 0
 			if status == 0xF0 {
 				//std::cout << "System Exclusive Begin: " << ReadString(ReadValue())  << std::endl;
 				fmt.Printf("System exclusive message begin: %s\n", readString(file, readValue(file)))
@@ -278,11 +281,11 @@ func parseTrack(file *os.File) MidiTrack {
 			}
 
 			if status == 0xFF {
-				handleMetaType(file, track)
+				eof = handleMetaType(file, track)
 			}
 
 		} else {
-			fmt.Printf("Unrecognized status byte: %b\n", status)
+			fmt.Printf("Unrecognized status byte: %d\n", status)
 		}
 
 	}
@@ -364,7 +367,7 @@ func handleMetaType(file *os.File, track MidiTrack) (endOfTrack bool) {
 
 		binary.Read(file, binary.BigEndian, &val1)
 		binary.Read(file, binary.BigEndian, &val2)
-		fmt.Printf("Time signature: %d/%d\n", val1, val2)
+		fmt.Printf("Time signature: %d/%d\n", val1, 2<<val2)
 
 		binary.Read(file, binary.BigEndian, &val1)
 		fmt.Printf("Clocks per tick: %d\n", val1)
@@ -378,14 +381,14 @@ func handleMetaType(file *os.File, track MidiTrack) (endOfTrack bool) {
 		binary.Read(file, binary.BigEndian, &keySignature)
 		binary.Read(file, binary.BigEndian, &minorKey)
 
-		fmt.Printf("Key signature: %s\n", keySignature)
-		fmt.Printf("Minor key: %s\n", minorKey)
+		fmt.Printf("Key signature: %d\n", keySignature)
+		fmt.Printf("Minor key: %d\n", minorKey)
 
 	case MetaSequencerSpecific:
 		fmt.Printf("Sequencer specific: %s", readString(file, uint32(length)))
 
 	default:
-		fmt.Printf("Unrecognized MetaEvent: %x\n", metaType)
+		fmt.Printf("Unrecognized MetaEvent: %c\n", metaType)
 
 	}
 
