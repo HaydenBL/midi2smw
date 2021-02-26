@@ -38,7 +38,7 @@ func parseHeader(file *os.File) (numTrackChunks uint16) {
 }
 
 func parseTrack(file *os.File) MidiTrack {
-	fmt.Println("----- TRACK FOUND -----")
+	fmt.Println("----- TRACK FOUND")
 
 	var val32 uint32 = 0
 	var eof = false

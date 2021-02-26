@@ -57,7 +57,7 @@ func Parse(fileName string) ([]MidiTrack, error) {
 		midiTracks = append(midiTracks, track)
 	}
 
-	fmt.Printf("Found %d tracks\n", len(midiTracks))
+	fmt.Printf("\nFound %d tracks\n", len(midiTracks))
 
 	return midiTracks, nil
 }
