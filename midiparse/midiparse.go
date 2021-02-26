@@ -19,20 +19,10 @@ type MidiEvent struct {
 	DeltaTick uint32
 }
 
-type MidiNote struct {
-	Key       uint8
-	Velocity  uint8
-	StartTime uint32
-	Duration  uint32
-}
-
 type MidiTrack struct {
 	Name       string
 	Instrument string
 	Events     []MidiEvent
-	Notes      []MidiNote
-	MaxNote    uint8
-	MinNote    uint8
 }
 
 const (
