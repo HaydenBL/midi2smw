@@ -1,6 +1,16 @@
 package convert
 
-import "midi2smw/midiparse"
+import (
+	"fmt"
+	"midi2smw/midiparse"
+)
+
+type MidiNote struct {
+	Key       uint8
+	Velocity  uint8
+	StartTime uint32
+	Duration  uint32
+}
 
 type NoteTrack struct {
 	Notes   []MidiNote
@@ -33,7 +43,21 @@ func convertNotes(tracks []midiparse.MidiTrack) []NoteTrack {
 		}
 	}
 
+	noteTracks = filterEmptyNoteTracks(noteTracks)
+
 	return noteTracks
+}
+
+func filterEmptyNoteTracks(tracks []NoteTrack) []NoteTrack {
+	var nonEmptyTracks []NoteTrack
+	for _, track := range tracks {
+		if len(track.Notes) != 0 {
+			nonEmptyTracks = append(nonEmptyTracks, track)
+		}
+	}
+
+	fmt.Printf("Removed %d tracks with no note data\n", len(tracks)-len(nonEmptyTracks))
+	return nonEmptyTracks
 }
 
 func findNoteIndex(notes []MidiNote, key uint8) (int, MidiNote) {

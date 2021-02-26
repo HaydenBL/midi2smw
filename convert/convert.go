@@ -5,24 +5,17 @@ import (
 	"midi2smw/midiparse"
 )
 
-type MidiNote struct {
-	Key       uint8
-	Velocity  uint8
-	StartTime uint32
-	Duration  uint32
-}
-
 func Convert(midiTracks []midiparse.MidiTrack) {
 	fmt.Println("Converting midi tracks...")
 
-	//midiTracks = filterOtherEventTypes(midiTracks)
-	//midiTracks = filterEmptyTracks(midiTracks)
+	midiTracks = filterOtherEventTypes(midiTracks)
+	midiTracks = filterEmptyTracks(midiTracks)
 
-	fmt.Printf("Tracks with note data: %d\n", len(midiTracks))
+	fmt.Printf("Tracks with event data: %d\n", len(midiTracks))
 
 	noteTracks := convertNotes(midiTracks)
 
-	fmt.Printf("bah, %d", noteTracks[0].MaxNote)
+	fmt.Printf("bah, %d\n", noteTracks[0].MaxNote)
 
 }
 
@@ -34,7 +27,7 @@ func filterEmptyTracks(tracks []midiparse.MidiTrack) []midiparse.MidiTrack {
 		}
 	}
 
-	fmt.Printf("Removed %d tracks without note data\n", len(tracks)-len(nonEmptyTracks))
+	fmt.Printf("Removed %d tracks with no midi event data\n", len(tracks)-len(nonEmptyTracks))
 	return nonEmptyTracks
 }
 
