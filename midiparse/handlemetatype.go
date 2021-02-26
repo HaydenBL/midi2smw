@@ -24,7 +24,7 @@ const (
 	metaSequencerSpecific uint8 = 0x7F
 )
 
-func handleMetaType(file *os.File, track midiTrack) (endOfTrack bool) {
+func handleMetaType(file *os.File, track MidiTrack) (endOfTrack bool) {
 	var metaType, length uint8
 
 	binary.Read(file, binary.BigEndian, &metaType)
@@ -45,12 +45,12 @@ func handleMetaType(file *os.File, track midiTrack) (endOfTrack bool) {
 		fmt.Printf("Copyright: %s\n", readString(file, uint32(length)))
 
 	case metaTrackName:
-		track.name = readString(file, uint32(length))
-		fmt.Printf("Track name: %s\n", track.name)
+		track.Name = readString(file, uint32(length))
+		fmt.Printf("Track name: %s\n", track.Name)
 
 	case metaInstrumentName:
-		track.instrument = readString(file, uint32(length))
-		fmt.Printf("Instrument name: %s\n", track.instrument)
+		track.Instrument = readString(file, uint32(length))
+		fmt.Printf("Instrument name: %s\n", track.Instrument)
 
 	case metaLyrics:
 		fmt.Printf("Lyrics: %s\n", readString(file, uint32(length)))
