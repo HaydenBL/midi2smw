@@ -17,6 +17,7 @@ var noteDict = map[int]string{
 	11: "b",
 }
 
+// SMW tempo conversion formula: BPM * (256/625)
 func createSmwChannelTracks(noteTracks []noteTrack) {
 
 	for _, noteTrack := range noteTracks {
