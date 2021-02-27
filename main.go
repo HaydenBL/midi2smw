@@ -7,6 +7,10 @@ import (
 )
 
 func main() {
+	beginParsing()
+}
+
+func beginParsing() {
 	filename := "dean_town.mid"
 
 	fmt.Printf("========== BEGIN PARSING ==========\n\n")
@@ -22,5 +26,4 @@ func main() {
 	convert.Convert(midiTracks)
 
 	fmt.Printf("\n\n\n========== COMPLETE ==========\n")
-
 }

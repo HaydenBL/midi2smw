@@ -11,12 +11,8 @@ func Convert(midiTracks []midiparse.MidiTrack) {
 	midiTracks = filterOtherEventTypes(midiTracks)
 	midiTracks = filterEmptyTracks(midiTracks)
 
-	fmt.Printf("Tracks with event data: %d\n", len(midiTracks))
-
 	noteTracks := convertNotes(midiTracks)
-
-	fmt.Printf("bah, %d\n", noteTracks[0].MaxNote)
-
+	createSmwChannelTracks(noteTracks)
 }
 
 func filterEmptyTracks(tracks []midiparse.MidiTrack) []midiparse.MidiTrack {
@@ -27,7 +23,9 @@ func filterEmptyTracks(tracks []midiparse.MidiTrack) []midiparse.MidiTrack {
 		}
 	}
 
-	fmt.Printf("Removed %d tracks with no midi event data\n", len(tracks)-len(nonEmptyTracks))
+	if len(tracks) > len(nonEmptyTracks) {
+		fmt.Printf("Removed %d tracks with no midi event data\n", len(tracks)-len(nonEmptyTracks))
+	}
 	return nonEmptyTracks
 }
 

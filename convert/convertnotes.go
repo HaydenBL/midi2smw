@@ -5,30 +5,30 @@ import (
 	"midi2smw/midiparse"
 )
 
-type MidiNote struct {
+type midiNote struct {
 	Key       uint8
 	Velocity  uint8
 	StartTime uint32
 	Duration  uint32
 }
 
-type NoteTrack struct {
-	Notes   []MidiNote
+type noteTrack struct {
+	Notes   []midiNote
 	MaxNote uint8
 	MinNote uint8
 }
 
-func convertNotes(tracks []midiparse.MidiTrack) []NoteTrack {
-	var noteTracks = make([]NoteTrack, len(tracks))
+func convertNotes(tracks []midiparse.MidiTrack) []noteTrack {
+	var noteTracks = make([]noteTrack, len(tracks))
 
 	for trackIndex, track := range tracks {
 		var wallTime uint32
-		var notesBeingProcessed []MidiNote
+		var notesBeingProcessed []midiNote
 
 		for _, event := range track.Events {
 			wallTime += event.DeltaTick
 			if event.Event == midiparse.NoteOn {
-				notesBeingProcessed = append(notesBeingProcessed, MidiNote{event.Key, event.Velocity, wallTime, 0})
+				notesBeingProcessed = append(notesBeingProcessed, midiNote{event.Key, event.Velocity, wallTime, 0})
 			}
 			if event.Event == midiparse.NoteOff {
 				i, note := findNoteIndex(notesBeingProcessed, event.Key)
@@ -48,30 +48,32 @@ func convertNotes(tracks []midiparse.MidiTrack) []NoteTrack {
 	return noteTracks
 }
 
-func filterEmptyNoteTracks(tracks []NoteTrack) []NoteTrack {
-	var nonEmptyTracks []NoteTrack
+func filterEmptyNoteTracks(tracks []noteTrack) []noteTrack {
+	var nonEmptyTracks []noteTrack
 	for _, track := range tracks {
 		if len(track.Notes) != 0 {
 			nonEmptyTracks = append(nonEmptyTracks, track)
 		}
 	}
 
-	fmt.Printf("Removed %d tracks with no note data\n", len(tracks)-len(nonEmptyTracks))
+	if len(nonEmptyTracks) < len(tracks) {
+		fmt.Printf("Removed %d tracks with no note data\n", len(tracks)-len(nonEmptyTracks))
+	}
 	return nonEmptyTracks
 }
 
-func findNoteIndex(notes []MidiNote, key uint8) (int, MidiNote) {
+func findNoteIndex(notes []midiNote, key uint8) (int, midiNote) {
 	for i, note := range notes {
 		if note.Key == key {
 			return i, note
 		}
 	}
-	return -1, MidiNote{}
+	return -1, midiNote{}
 }
 
-func deleteAtIndex(notes []MidiNote, i int) []MidiNote {
+func deleteAtIndex(notes []midiNote, i int) []midiNote {
 	copy(notes[i:], notes[i+1:])
-	notes[len(notes)-1] = MidiNote{}
+	notes[len(notes)-1] = midiNote{}
 	notes = notes[:len(notes)-1]
 	return notes
 }
