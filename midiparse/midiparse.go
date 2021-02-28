@@ -5,6 +5,9 @@ import (
 	"os"
 )
 
+// Much of this parsing code was written with the help of OLC's midi parsing implementation in C++
+// https://github.com/OneLoneCoder/olcPixelGameEngine/blob/master/Videos/OneLoneCoder_PGE_MIDI.cpp
+
 var (
 	globalTempo uint32 = 0
 	globalBPM   uint32 = 0

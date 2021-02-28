@@ -12,7 +12,24 @@ func Convert(midiTracks []midiparse.MidiTrack) {
 	midiTracks = filterEmptyTracks(midiTracks)
 
 	noteTracks := convertNotes(midiTracks)
-	createSmwChannelTracks(noteTracks)
+	tracks := createSmwChannelTracks(noteTracks)
+
+	testPrint(tracks[0])
+}
+
+// temporary, just to test this thing
+func testPrint(smwTrack []SmwNote) {
+	lastOctave := smwTrack[0].octave
+	fmt.Printf("Start octave: %d\n", lastOctave)
+	for _, smwNote := range smwTrack {
+		if smwNote.octave > lastOctave {
+			fmt.Printf(">")
+		} else if smwNote.octave < lastOctave {
+			fmt.Printf("<")
+		}
+		fmt.Printf("%s%d", smwNote.key, smwNote.length)
+		lastOctave = smwNote.octave
+	}
 }
 
 func filterEmptyTracks(tracks []midiparse.MidiTrack) []midiparse.MidiTrack {
