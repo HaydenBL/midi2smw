@@ -27,7 +27,15 @@ func testPrint(smwTrack []SmwNote) {
 		} else if smwNote.octave < lastOctave {
 			fmt.Printf("<")
 		}
-		fmt.Printf("%s%d", smwNote.key, smwNote.length)
+		if smwNote.additionalLength != 0 {
+			if smwNote.additionalLength == smwNote.length*2 {
+				fmt.Printf("%s%d.", smwNote.key, smwNote.length)
+			} else {
+				fmt.Printf("%s%d^%d", smwNote.key, smwNote.length, smwNote.additionalLength)
+			}
+		} else {
+			fmt.Printf("%s%d", smwNote.key, smwNote.length)
+		}
 		lastOctave = smwNote.octave
 	}
 }

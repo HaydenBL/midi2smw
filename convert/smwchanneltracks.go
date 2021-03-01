@@ -5,9 +5,10 @@ import (
 )
 
 type SmwNote struct {
-	key    string
-	length uint8
-	octave int
+	key              string
+	length           uint8
+	additionalLength uint8
+	octave           int
 }
 
 var noteDict = map[int]string{
@@ -38,11 +39,11 @@ func createSmwChannelTracks(noteTracks []noteTrack) [][]SmwNote {
 				continue // temporary way of dealing with chords
 			}
 			key, octave := noteValueToKey(note.Key)
-			if restLength := getRestLength(note, lastStartTime, lastDuration, convertToSmwNoteLength); restLength != 0 {
-				smwTrack = append(smwTrack, SmwNote{"r", restLength, octave})
+			if restLength, additionalLength := getRestLength(note, lastStartTime, lastDuration, convertToSmwNoteLength); restLength != 0 {
+				smwTrack = append(smwTrack, SmwNote{"r", restLength, additionalLength, octave})
 			}
-			length := convertToSmwNoteLength(note.Duration)
-			smwNote := SmwNote{key, length, octave}
+			length, additionalLength := convertToSmwNoteLength(note.Duration)
+			smwNote := SmwNote{key, length, additionalLength, octave}
 			if note.StartTime != lastStartTime {
 				smwTrack = append(smwTrack, smwNote)
 			}
@@ -54,11 +55,11 @@ func createSmwChannelTracks(noteTracks []noteTrack) [][]SmwNote {
 	return smwTracks
 }
 
-func getRestLength(note midiNote, lastStartTime uint32, lastDuration uint32, converter func(duration uint32) uint8) uint8 {
+func getRestLength(note midiNote, lastStartTime uint32, lastDuration uint32, converter func(duration uint32) (uint8, uint8)) (uint8, uint8) {
 	lastEndTime := lastStartTime + lastDuration
 	restGapDuration := note.StartTime - lastEndTime
-	restGapSmwLength := converter(restGapDuration)
-	return restGapSmwLength
+	restGapSmwLength, restGapSmwAdditionalLength := converter(restGapDuration)
+	return restGapSmwLength, restGapSmwAdditionalLength
 }
 
 func noteValueToKey(noteValue uint8) (key string, octave int) {
@@ -74,60 +75,73 @@ func noteValueToKey(noteValue uint8) (key string, octave int) {
 	return key, octave
 }
 
-func noteLengthConverter() func(duration uint32) uint8 {
+func noteLengthConverter() func(duration uint32) (length, additionalLength uint8) {
 	// TODO - Need to work out the math, but for the midi I'm working with,
 	//  60 ticks is 1/32 note
 	ticksPer32ndNote := 60.0
 	constant := (1.0 / 32.0) / ticksPer32ndNote
 	note32nd := constant * ticksPer32ndNote
 
-	//note64th := note32nd / 2
+	note64th := note32nd / 2
 	note16th := note32nd * 2
 	note8th := note32nd * 4
 	noteQuarter := note32nd * 8
 	noteHalf := note32nd * 16
 	noteWhole := note32nd * 32
 
-	return func(duration uint32) uint8 {
-		noteLength := float64(duration) * constant
-		if noteLength <= note32nd {
-			if round(noteLength, 0, note32nd) == 1 {
-				return 0
+	noteLengthToSmwLength := func(noteLength float64) (uint8, float64) {
+		if noteLength <= note64th {
+			if round(noteLength, 0, note64th) == 1 {
+				return 0, 0
 			}
-			return 32
+			return 64, note64th
+		}
+		if noteLength <= note32nd {
+			if round(noteLength, note64th, note32nd) == 1 {
+				return 64, note64th
+			}
+			return 32, note32nd
 		}
 		if noteLength <= note16th {
 			if round(noteLength, note32nd, note16th) == 1 {
-				return 32
+				return 32, note32nd
 			}
-			return 16
+			return 16, note16th
 		}
 		if noteLength <= note8th {
 			if round(noteLength, note16th, note8th) == 1 {
-				return 16
+				return 16, note16th
 			}
-			return 8
+			return 8, note8th
 		}
 		if noteLength <= noteQuarter {
 			if round(noteLength, note8th, noteQuarter) == 1 {
-				return 8
+				return 8, note8th
 			}
-			return 4
+			return 4, noteQuarter
 		}
 		if noteLength <= noteHalf {
 			if round(noteLength, noteQuarter, noteHalf) == 1 {
-				return 4
+				return 4, noteQuarter
 			}
-			return 2
+			return 2, noteHalf
 		}
 		if noteLength <= noteWhole {
 			if round(noteLength, noteHalf, noteWhole) == 1 {
-				return 2
+				return 2, noteHalf
 			}
-			return 1
+			return 1, noteWhole
 		}
 
-		return 1 // default to whole note if longer?
+		return 1, noteWhole // default to whole note if longer?
+	}
+
+	return func(duration uint32) (length, additionalLength uint8) {
+		noteLength := float64(duration) * constant
+		length, lengthTicks := noteLengthToSmwLength(noteLength)
+		remainder := noteLength - lengthTicks
+		additionalLength, remainder = noteLengthToSmwLength(remainder)
+		return length, additionalLength
 	}
 }
 
