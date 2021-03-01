@@ -5,10 +5,9 @@ import (
 )
 
 type SmwNote struct {
-	key              string
-	length           uint8
-	additionalLength uint8
-	octave           int
+	key          string
+	lengthValues []uint8
+	octave       int
 }
 
 var noteDict = map[int]string{
@@ -39,11 +38,11 @@ func createSmwChannelTracks(noteTracks []noteTrack) [][]SmwNote {
 				continue // temporary way of dealing with chords
 			}
 			key, octave := noteValueToKey(note.Key)
-			if restLength, additionalLength := getRestLength(note, lastStartTime, lastDuration, convertToSmwNoteLength); restLength != 0 {
-				smwTrack = append(smwTrack, SmwNote{"r", restLength, additionalLength, octave})
+			if restLengths := getRestLength(note.StartTime, lastStartTime, lastDuration, convertToSmwNoteLength); len(restLengths) > 0 && restLengths[0] != 0 {
+				smwTrack = append(smwTrack, SmwNote{"r", restLengths, octave})
 			}
-			length, additionalLength := convertToSmwNoteLength(note.Duration)
-			smwNote := SmwNote{key, length, additionalLength, octave}
+			lengths := convertToSmwNoteLength(note.Duration)
+			smwNote := SmwNote{key, lengths, octave}
 			if note.StartTime != lastStartTime {
 				smwTrack = append(smwTrack, smwNote)
 			}
@@ -55,11 +54,11 @@ func createSmwChannelTracks(noteTracks []noteTrack) [][]SmwNote {
 	return smwTracks
 }
 
-func getRestLength(note midiNote, lastStartTime uint32, lastDuration uint32, converter func(duration uint32) (uint8, uint8)) (uint8, uint8) {
+func getRestLength(currentStartTime, lastStartTime uint32, lastDuration uint32, converter func(duration uint32) []uint8) []uint8 {
 	lastEndTime := lastStartTime + lastDuration
-	restGapDuration := note.StartTime - lastEndTime
-	restGapSmwLength, restGapSmwAdditionalLength := converter(restGapDuration)
-	return restGapSmwLength, restGapSmwAdditionalLength
+	restGapDuration := currentStartTime - lastEndTime
+	restGapSmwLengths := converter(restGapDuration)
+	return restGapSmwLengths
 }
 
 func noteValueToKey(noteValue uint8) (key string, octave int) {
@@ -75,7 +74,7 @@ func noteValueToKey(noteValue uint8) (key string, octave int) {
 	return key, octave
 }
 
-func noteLengthConverter() func(duration uint32) (length, additionalLength uint8) {
+func noteLengthConverter() func(duration uint32) (lengths []uint8) {
 	// TODO - Need to work out the math, but for the midi I'm working with,
 	//  60 ticks is 1/32 note
 	ticksPer32ndNote := 60.0
@@ -136,12 +135,17 @@ func noteLengthConverter() func(duration uint32) (length, additionalLength uint8
 		return 1, noteWhole // default to whole note if longer?
 	}
 
-	return func(duration uint32) (length, additionalLength uint8) {
+	return func(duration uint32) (lengths []uint8) {
 		noteLength := float64(duration) * constant
 		length, lengthTicks := noteLengthToSmwLength(noteLength)
+		lengths = append(lengths, length)
 		remainder := noteLength - lengthTicks
-		additionalLength, remainder = noteLengthToSmwLength(remainder)
-		return length, additionalLength
+		length, lengthTicks = noteLengthToSmwLength(remainder)
+		for ; length != 0; length, lengthTicks = noteLengthToSmwLength(remainder) {
+			lengths = append(lengths, length)
+			remainder = remainder - lengthTicks
+		}
+		return lengths
 	}
 }
 
