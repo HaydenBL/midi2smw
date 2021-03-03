@@ -8,14 +8,17 @@ import (
 func Convert(midiTracks []midiparse.MidiTrack) {
 	fmt.Println("Converting midi tracks...")
 
+	var ticksPer64thNote uint32 = 30 // hardcoding for the track I'm working with, figure this out later
+
 	midiTracks = filterOtherEventTypes(midiTracks)
 	midiTracks = filterEmptyTracks(midiTracks)
 
 	noteTracks := convertNotes(midiTracks)
-	noteTracks = quantizeNotes(noteTracks)
+	noteTracks = quantizeNotes(noteTracks, ticksPer64thNote)
 	noteTracks = removeOverlapping(noteTracks)
+	noteTracks = insertRests(noteTracks)
 
-	tracks := createSmwChannelTracks(noteTracks)
+	tracks := createSmwChannelTracks(noteTracks, ticksPer64thNote)
 
 	testPrint(tracks[0])
 }
@@ -25,19 +28,29 @@ func testPrint(smwTrack []SmwNote) {
 	lastOctave := smwTrack[0].octave
 	fmt.Printf("Start octave: %d\n", lastOctave)
 	for _, smwNote := range smwTrack {
-		if smwNote.octave > lastOctave {
-			fmt.Printf(">")
-		} else if smwNote.octave < lastOctave {
-			fmt.Printf("<")
-		}
-		for i, note := range smwNote.lengthValues {
-			if i == 0 {
-				fmt.Printf("%s%d", smwNote.key, note)
-			} else {
-				fmt.Printf("^%d", note)
+		if smwNote.key == "r" {
+			for i, note := range smwNote.lengthValues {
+				if i == 0 {
+					fmt.Printf("r%d", note)
+				} else {
+					fmt.Printf("^%d", note)
+				}
 			}
+		} else {
+			if smwNote.octave > lastOctave {
+				fmt.Printf(">")
+			} else if smwNote.octave < lastOctave {
+				fmt.Printf("<")
+			}
+			for i, note := range smwNote.lengthValues {
+				if i == 0 {
+					fmt.Printf("%s%d", smwNote.key, note)
+				} else {
+					fmt.Printf("^%d", note)
+				}
+			}
+			lastOctave = smwNote.octave
 		}
-		lastOctave = smwNote.octave
 	}
 }
 

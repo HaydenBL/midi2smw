@@ -1,8 +1,6 @@
 package convert
 
-func quantizeNotes(tracks []noteTrack) []noteTrack {
-	var ticksPer64thNote uint32 = 30 // hardcoding for the track I'm working with, figure this out later
-
+func quantizeNotes(tracks []noteTrack, ticksPer64thNote uint32) []noteTrack {
 	quantizeTimestamp := func(timestamp uint32) uint32 {
 		timestampMod64thNote := timestamp % ticksPer64thNote
 		timestampMinusMod := timestamp - timestampMod64thNote
