@@ -17,27 +17,39 @@ func quantizeNotes(tracks []noteTrack, ticksPer64thNote uint32) []noteTrack {
 	return tracks
 }
 
-func removeOverlapping(tracks []noteTrack) []noteTrack {
+func removeOverlappingOnAllTracks(tracks []noteTrack) []noteTrack {
+	modifiedTracks := make([]noteTrack, 0)
+	for _, track := range tracks {
+		modifiedTracks = append(modifiedTracks, removeOverlapping(track))
+	}
+	return modifiedTracks
+}
+
+func removeOverlapping(track noteTrack) noteTrack {
 	removeIndex := func(slice []midiNote, s int) []midiNote {
 		return append(slice[:s], slice[s+1:]...)
 	}
-
-	for i, track := range tracks {
-		overlapping := make([]int, 0)
-		for j := 0; j < len(track.Notes); j++ {
-			for k := j + 1; k < len(track.Notes); k++ {
-				if overlap(track.Notes[j], track.Notes[k]) {
-					overlapping = append(overlapping, k)
-				}
+	rmv := func(notes []midiNote) (newNotes []midiNote, more bool) {
+		for i := range notes {
+			if i == 0 {
+				continue
+			}
+			lastNote := notes[i-1]
+			currentNote := notes[i]
+			if overlap(lastNote, currentNote) {
+				notes = removeIndex(notes, i)
+				return notes, true
 			}
 		}
-		for j := len(overlapping) - 1; j >= 0; j-- {
-			overlappingIndex := overlapping[j]
-			tracks[i].Notes = removeIndex(tracks[i].Notes, overlappingIndex)
-		}
+		return notes, false
+	}
+	var more bool
+	track.Notes, more = rmv(track.Notes)
+	for more {
+		track.Notes, more = rmv(track.Notes)
 	}
 
-	return tracks
+	return track
 }
 
 func closer(n, subtracted, added uint32) uint32 {
