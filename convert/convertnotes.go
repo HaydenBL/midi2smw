@@ -35,7 +35,7 @@ func convertNotes(tracks []midiparse.MidiTrack) []noteTrack {
 				if i != -1 {
 					note.Duration = wallTime - note.StartTime
 					noteTracks[trackIndex].Notes = append(noteTracks[trackIndex].Notes, note)
-					noteTracks[trackIndex].MinNote = min(noteTracks[trackIndex].MinNote, note.Key)
+					noteTracks[trackIndex].MinNote = minUint8(noteTracks[trackIndex].MinNote, note.Key)
 					noteTracks[trackIndex].MaxNote = max(noteTracks[trackIndex].MaxNote, note.Key)
 					notesBeingProcessed = deleteAtIndex(notesBeingProcessed, i)
 				}
@@ -78,7 +78,7 @@ func deleteAtIndex(notes []midiNote, i int) []midiNote {
 	return notes
 }
 
-func min(a, b uint8) uint8 {
+func minUint8(a, b uint8) uint8 {
 	if a < b {
 		return a
 	}

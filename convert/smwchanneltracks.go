@@ -25,34 +25,60 @@ var noteDict = map[int]string{
 	11: "b",
 }
 
+//func createSmwChannelTracks(noteTracks []noteTrack) [][]SmwNote {
+//	var smwTracks [][]SmwNote
+//	convertToSmwNoteLength := noteLengthConverter()
+//	for _, noteTrack := range noteTracks {
+//		var smwTrack []SmwNote
+//		for j, note := range noteTrack.Notes {
+//			if j != 0 && note.StartTime == lastStartTime {
+//				continue // temporary way of dealing with chords
+//			}
+//			key, octave := noteValueToKey(note.Key)
+//			if restLengths := getRestLength(note.StartTime, lastStartTime, lastDuration, convertToSmwNoteLength); len(restLengths) > 0 && restLengths[0] != 0 {
+//				smwTrack = append(smwTrack, SmwNote{"r", restLengths, octave})
+//			}
+//			lengths := convertToSmwNoteLength(note.Duration)
+//			smwNote := SmwNote{key, lengths, octave}
+//			if note.StartTime != lastStartTime {
+//				smwTrack = append(smwTrack, smwNote)
+//			}
+//			lastStartTime = note.StartTime
+//			lastDuration = note.Duration
+//		}
+//		smwTracks = append(smwTracks, smwTrack)
+//	}
+//	return smwTracks
+//}
+
 // SMW tempo conversion formula: BPM * (256/625)
-func createSmwChannelTracks(noteTracks []noteTrack) [][]SmwNote {
-	var smwTracks [][]SmwNote
-	convertToSmwNoteLength := noteLengthConverter()
-	for _, noteTrack := range noteTracks {
-		var smwTrack []SmwNote
-		lastStartTime := uint32(0)
-		lastDuration := uint32(0)
-		for j, note := range noteTrack.Notes {
-			if j != 0 && note.StartTime == lastStartTime {
-				continue // temporary way of dealing with chords
-			}
-			key, octave := noteValueToKey(note.Key)
-			if restLengths := getRestLength(note.StartTime, lastStartTime, lastDuration, convertToSmwNoteLength); len(restLengths) > 0 && restLengths[0] != 0 {
-				smwTrack = append(smwTrack, SmwNote{"r", restLengths, octave})
-			}
-			lengths := convertToSmwNoteLength(note.Duration)
-			smwNote := SmwNote{key, lengths, octave}
-			if note.StartTime != lastStartTime {
-				smwTrack = append(smwTrack, smwNote)
-			}
-			lastStartTime = note.StartTime
-			lastDuration = note.Duration
-		}
-		smwTracks = append(smwTracks, smwTrack)
-	}
-	return smwTracks
-}
+//func createSmwChannelTracks(noteTracks []noteTrack) [][]SmwNote {
+//	var smwTracks [][]SmwNote
+//	convertToSmwNoteLength := noteLengthConverter()
+//	for _, noteTrack := range noteTracks {
+//		var smwTrack []SmwNote
+//		lastStartTime := uint32(0)
+//		lastDuration := uint32(0)
+//		for j, note := range noteTrack.Notes {
+//			if j != 0 && note.StartTime == lastStartTime {
+//				continue // temporary way of dealing with chords
+//			}
+//			key, octave := noteValueToKey(note.Key)
+//			if restLengths := getRestLength(note.StartTime, lastStartTime, lastDuration, convertToSmwNoteLength); len(restLengths) > 0 && restLengths[0] != 0 {
+//				smwTrack = append(smwTrack, SmwNote{"r", restLengths, octave})
+//			}
+//			lengths := convertToSmwNoteLength(note.Duration)
+//			smwNote := SmwNote{key, lengths, octave}
+//			if note.StartTime != lastStartTime {
+//				smwTrack = append(smwTrack, smwNote)
+//			}
+//			lastStartTime = note.StartTime
+//			lastDuration = note.Duration
+//		}
+//		smwTracks = append(smwTracks, smwTrack)
+//	}
+//	return smwTracks
+//}
 
 func getRestLength(currentStartTime, lastStartTime uint32, lastDuration uint32, converter func(duration uint32) []uint8) []uint8 {
 	lastEndTime := lastStartTime + lastDuration

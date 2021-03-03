@@ -12,6 +12,9 @@ func Convert(midiTracks []midiparse.MidiTrack) {
 	midiTracks = filterEmptyTracks(midiTracks)
 
 	noteTracks := convertNotes(midiTracks)
+	noteTracks = quantizeNotes(noteTracks)
+	noteTracks = removeOverlapping(noteTracks)
+
 	tracks := createSmwChannelTracks(noteTracks)
 
 	testPrint(tracks[0])
