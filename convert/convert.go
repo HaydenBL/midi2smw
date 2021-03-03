@@ -14,7 +14,7 @@ func Convert(midiTracks []midiparse.MidiTrack) {
 	midiTracks = filterEmptyTracks(midiTracks)
 
 	noteTracks := convertNotes(midiTracks)
-	noteTracks = quantizeNotes(noteTracks, ticksPer64thNote)
+	noteTracks = quantizeNotesOnAllTracks(noteTracks, ticksPer64thNote)
 	noteTracks = removeOverlappingOnAllTracks(noteTracks)
 	noteTracks = insertRestsIntoAllTracks(noteTracks)
 
