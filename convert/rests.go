@@ -1,29 +1,34 @@
 package convert
 
-func insertRests(tracks []noteTrack) []noteTrack {
+func insertRestsIntoAllTracks(tracks []noteTrack) []noteTrack {
 	for i, track := range tracks {
-		tracks[i] = insertRestsIntoTrack(track)
+		tracks[i].Notes = insertRestsIntoTrack(track.Notes)
 	}
 	return tracks
 }
 
-func insertRestsIntoTrack(track noteTrack) noteTrack {
+func insertRestsIntoTrack(notes []midiNote) []midiNote {
 	newNoteTrack := make([]midiNote, 0)
-	for i := 0; i < len(track.Notes); i++ {
-		newNoteTrack = append(newNoteTrack, track.Notes[i])
+	for i := 0; i < len(notes); i++ {
 		var lastNote midiNote
 		if i == 0 {
+			if notes[i].StartTime > 0 {
+				rest := getRestNote(0, notes[i].StartTime)
+				newNoteTrack = append(newNoteTrack, rest)
+			}
+			newNoteTrack = append(newNoteTrack, notes[i])
 			lastNote = midiNote{
 				Key:       0,
 				Velocity:  0,
 				isRest:    false,
 				StartTime: 0,
-				Duration:  0,
+				Duration:  notes[i].StartTime,
 			}
+			continue
 		} else {
-			lastNote = track.Notes[i-1]
+			lastNote = notes[i-1]
 		}
-		currentNote := track.Notes[i]
+		currentNote := notes[i]
 		restLength := getRestLength(currentNote, lastNote)
 		if restLength > 0 {
 			newNoteTrack = append(newNoteTrack, midiNote{
@@ -33,10 +38,23 @@ func insertRestsIntoTrack(track noteTrack) noteTrack {
 				Duration:  restLength,
 				isRest:    true,
 			})
+			newNoteTrack = append(newNoteTrack, notes[i])
+		} else {
+			newNoteTrack = append(newNoteTrack, notes[i])
 		}
 	}
-	track.Notes = newNoteTrack
-	return track
+	notes = newNoteTrack
+	return notes
+}
+
+func getRestNote(startTime, endTime uint32) midiNote {
+	return midiNote{
+		Key:       0,
+		Velocity:  0,
+		isRest:    true,
+		StartTime: startTime,
+		Duration:  endTime,
+	}
 }
 
 func getRestLength(currentNote midiNote, lastNote midiNote) uint32 {

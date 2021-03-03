@@ -65,7 +65,7 @@ func TestRemoveOverlapping(t *testing.T) {
 	if len(track.Notes) != 2 {
 		t.Fatalf("Expected 2, actual: %d", len(track.Notes))
 	}
-	if track.Notes[1].StartTime != 10 && track.Notes[1].Duration != 10 {
+	if track.Notes[1].StartTime != 10 || track.Notes[1].Duration != 10 {
 		t.Fatalf("Whoops")
 	}
 }
