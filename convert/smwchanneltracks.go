@@ -74,12 +74,23 @@ func trackDone(notes []midiNote, tick uint32) bool {
 }
 
 func getNoteWithStartTime(notes []midiNote, tick uint32) *midiNote {
+	var potentialNotes = make([]midiNote, 0)
 	for _, note := range notes {
 		if note.StartTime == tick {
-			return &note
+			potentialNotes = append(potentialNotes, note)
 		}
 	}
-	return nil
+	if len(potentialNotes) > 0 {
+		highestNote := midiNote{}
+		for _, note := range potentialNotes {
+			if note.Key > highestNote.Key {
+				highestNote = note
+			}
+		}
+		return &highestNote
+	} else {
+		return nil
+	}
 }
 
 func noteValueToSmwKey(note midiNote) (key string, octave int) {
