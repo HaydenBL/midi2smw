@@ -8,7 +8,6 @@ import (
 type midiNote struct {
 	Key       uint8
 	Velocity  uint8
-	isRest    bool
 	StartTime uint32
 	Duration  uint32
 }
@@ -29,7 +28,7 @@ func convertNotes(tracks []midiparse.MidiTrack) []noteTrack {
 		for _, event := range track.Events {
 			wallTime += event.DeltaTick
 			if event.Event == midiparse.NoteOn {
-				notesBeingProcessed = append(notesBeingProcessed, midiNote{event.Key, event.Velocity, false, wallTime, 0})
+				notesBeingProcessed = append(notesBeingProcessed, midiNote{event.Key, event.Velocity, wallTime, 0})
 			}
 			if event.Event == midiparse.NoteOff {
 				i, note := findNoteIndex(notesBeingProcessed, event.Key)

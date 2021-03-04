@@ -25,69 +25,120 @@ var noteDict = map[int]string{
 	11: "b",
 }
 
-func createSmwChannelTracks(noteTracks []noteTrack, ticksPer64thNote uint32) [][]SmwNote {
+func createSmwChannelTracksForAllTracks(noteTracks []noteTrack, ticksPer64thNote uint32) [][]SmwNote {
 	var smwTracks [][]SmwNote
-	convertToSmwNoteLength := noteLengthConverter(ticksPer64thNote)
+	noteLengthConverter := getNoteLengthConverter(ticksPer64thNote)
 	for _, noteTrack := range noteTracks {
-		var smwTrack []SmwNote
-		for _, note := range noteTrack.Notes {
-			key, octave := noteValueToKey(note)
-			lengths := convertToSmwNoteLength(note.Duration)
-			smwNote := SmwNote{key, lengths, octave}
-			smwTrack = append(smwTrack, smwNote)
-		}
+		smwTrack := createSmwChannelTrack(noteTrack.Notes, noteLengthConverter)
 		smwTracks = append(smwTracks, smwTrack)
 	}
 	return smwTracks
 }
 
-func noteValueToKey(note midiNote) (key string, octave int) {
+func createSmwChannelTrack(notes []midiNote, noteLengthConverter func(uint32) []uint8) []SmwNote {
+	var smwTrack []SmwNote
+	var tick, lastNoteEndTime uint32
+	var activeNote *midiNote
+	for tick = 0; !trackDone(notes, tick); tick++ {
+		if activeNote != nil {
+			if tick != activeNote.StartTime+activeNote.Duration {
+				continue
+			} else {
+				activeNote = nil
+			}
+		}
+		activeNote = getNoteWithStartTime(notes, tick)
+		if activeNote == nil {
+			continue
+		} else {
+			// insert rest
+			restLength := tick - lastNoteEndTime
+			if restLength != 0 {
+				lengths := noteLengthConverter(restLength)
+				restSmwNote := SmwNote{key: "r", lengthValues: lengths, octave: 0}
+				smwTrack = append(smwTrack, restSmwNote)
+			}
+		}
+		key, octave := noteValueToSmwKey(*activeNote)
+		lengths := noteLengthConverter(activeNote.Duration)
+		smwNote := SmwNote{key, lengths, octave}
+		smwTrack = append(smwTrack, smwNote)
+		lastNoteEndTime = activeNote.StartTime + activeNote.Duration
+	}
+	return smwTrack
+}
+
+func trackDone(notes []midiNote, tick uint32) bool {
+	lastNote := notes[len(notes)-1]
+	return tick > lastNote.StartTime+lastNote.Duration
+}
+
+func getNoteWithStartTime(notes []midiNote, tick uint32) *midiNote {
+	for _, note := range notes {
+		if note.StartTime == tick {
+			return &note
+		}
+	}
+	return nil
+}
+
+func noteValueToSmwKey(note midiNote) (key string, octave int) {
 	noteValue := note.Key
 	// Lowest SMW note is g0 == 19
 	// Highest SMW note is e6 == 88
-	if note.isRest {
-		return "r", 0
-	}
 	if noteValue < 19 || noteValue > 88 {
-		fmt.Printf("Error, invalid note value: %d\n", noteValue)
-		return "", -1
+		fmt.Printf("Error, cannot convert note value %d to SMW note (out of range)\n", noteValue)
+		return "", -999
 	}
 	key = noteDict[int(noteValue%12)]
 	octave = int(noteValue/12) - 1
 	return key, octave
 }
 
-func noteLengthConverter(ticksPer64thNote uint32) func(duration uint32) (lengths []uint8) {
+func getNoteLengthConverter(ticksPer64thNote uint32) func(duration uint32) (lengths []uint8) {
 	ticksPer32ndNote := ticksPer64thNote * 2
 	ticksPer16thNote := ticksPer32ndNote * 2
-	ticksPerQuarterNote := ticksPer16thNote * 2
+	ticksPer8thNote := ticksPer16thNote * 2
+	ticksPerQuarterNote := ticksPer8thNote * 2
 	ticksPerHalfNote := ticksPerQuarterNote * 2
 	ticksPerWholeNote := ticksPerHalfNote * 2
 
 	noteLengthToSmwLength := func(duration uint32) (uint8, uint32) {
-		if duration <= ticksPer64thNote {
-			return 64, ticksPer64thNote - duration
+		if duration > ticksPerWholeNote {
+			return 1, duration - ticksPerWholeNote
 		}
-		if duration <= ticksPer32ndNote {
-			return 32, ticksPer32ndNote - duration
+		num64thNotes := duration / ticksPer64thNote
+		half := num64thNotes
+		acc := 0
+		for half != 1 {
+			half = half / 2
+			acc++
 		}
-		if duration <= ticksPer16thNote {
-			return 16, ticksPer16thNote - duration
+		switch acc {
+		case 0:
+			return 64, duration - ticksPer64thNote
+		case 1:
+			return 32, duration - ticksPer32ndNote
+		case 2:
+			return 16, duration - ticksPer16thNote
+		case 3:
+			return 8, duration - ticksPer8thNote
+		case 4:
+			return 4, duration - ticksPerQuarterNote
+		case 5:
+			return 2, duration - ticksPerHalfNote
+		case 6:
+			return 1, duration - ticksPerWholeNote
 		}
-		if duration <= ticksPerQuarterNote {
-			return 4, ticksPerQuarterNote - duration
-		}
-		if duration <= ticksPerHalfNote {
-			return 2, ticksPerHalfNote - duration
-		}
-		if duration <= ticksPerWholeNote {
-			return 1, ticksPerWholeNote - duration
-		}
-		return 1, duration - ticksPerWholeNote
+		fmt.Println("You shouldn't be here!")
+		return 0, 0
 	}
 
 	return func(duration uint32) []uint8 {
 		lengths := make([]uint8, 0)
+		if duration == 0 {
+			return lengths
+		}
 		length, remainder := noteLengthToSmwLength(duration)
 		lengths = append(lengths, length)
 		for remainder != 0 {

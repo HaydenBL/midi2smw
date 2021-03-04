@@ -15,10 +15,8 @@ func Convert(midiTracks []midiparse.MidiTrack) {
 
 	noteTracks := convertNotes(midiTracks)
 	noteTracks = quantizeNotesOnAllTracks(noteTracks, ticksPer64thNote)
-	noteTracks = removeOverlappingOnAllTracks(noteTracks)
-	noteTracks = insertRestsIntoAllTracks(noteTracks)
 
-	tracks := createSmwChannelTracks(noteTracks, ticksPer64thNote)
+	tracks := createSmwChannelTracksForAllTracks(noteTracks, ticksPer64thNote)
 
 	testPrint(tracks[0])
 }
@@ -37,6 +35,7 @@ func testPrint(smwTrack []SmwNote) {
 				}
 			}
 		} else {
+			// TODO - handle jumping multiple octaves
 			if smwNote.octave > lastOctave {
 				fmt.Printf(">")
 			} else if smwNote.octave < lastOctave {
