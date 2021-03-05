@@ -5,7 +5,7 @@ import (
 	"midi2smw/midiparse"
 )
 
-func Convert(midiTracks []midiparse.MidiTrack) {
+func Convert(midiTracks []midiparse.MidiTrack) [][]SmwNote {
 	fmt.Println("Converting midi tracks...")
 
 	var ticksPer64thNote uint32 = 30 // hardcoding for the track I'm working with, figure this out later
@@ -18,39 +18,7 @@ func Convert(midiTracks []midiparse.MidiTrack) {
 
 	tracks := createSmwChannelTracksForAllTracks(noteTracks, ticksPer64thNote)
 
-	testPrint(tracks[0])
-}
-
-// temporary, just to test this thing
-func testPrint(smwTrack []SmwNote) {
-	lastOctave := smwTrack[0].octave
-	fmt.Printf("Start octave: %d\n", lastOctave)
-	for _, smwNote := range smwTrack {
-		if smwNote.key == "r" {
-			for i, note := range smwNote.lengthValues {
-				if i == 0 {
-					fmt.Printf("r%d", note)
-				} else {
-					fmt.Printf("^%d", note)
-				}
-			}
-		} else {
-			// TODO - handle jumping multiple octaves
-			if smwNote.octave > lastOctave {
-				fmt.Printf(">")
-			} else if smwNote.octave < lastOctave {
-				fmt.Printf("<")
-			}
-			for i, note := range smwNote.lengthValues {
-				if i == 0 {
-					fmt.Printf("%s%d", smwNote.key, note)
-				} else {
-					fmt.Printf("^%d", note)
-				}
-			}
-			lastOctave = smwNote.octave
-		}
-	}
+	return tracks
 }
 
 func filterEmptyTracks(tracks []midiparse.MidiTrack) []midiparse.MidiTrack {

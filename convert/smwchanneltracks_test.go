@@ -30,24 +30,24 @@ func TestCreateSmwChannelTrack(t *testing.T) {
 
 	expected := []SmwNote{
 		{
-			key:          "c",
-			lengthValues: []uint8{64},
-			octave:       1,
+			Key:          "c",
+			LengthValues: []uint8{64},
+			Octave:       1,
 		},
 		{
-			key:          "c",
-			lengthValues: []uint8{32},
-			octave:       1,
+			Key:          "c",
+			LengthValues: []uint8{32},
+			Octave:       1,
 		},
 		{
-			key:          "r",
-			lengthValues: []uint8{32},
-			octave:       0,
+			Key:          "r",
+			LengthValues: []uint8{32},
+			Octave:       0,
 		},
 		{
-			key:          "c",
-			lengthValues: []uint8{32},
-			octave:       1,
+			Key:          "c",
+			LengthValues: []uint8{32},
+			Octave:       1,
 		},
 	}
 

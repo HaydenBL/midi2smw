@@ -5,9 +5,9 @@ import (
 )
 
 type SmwNote struct {
-	key          string
-	lengthValues []uint8
-	octave       int
+	Key          string
+	LengthValues []uint8
+	Octave       int
 }
 
 var noteDict = map[int]string{
@@ -55,7 +55,7 @@ func createSmwChannelTrack(notes []midiNote, noteLengthConverter func(uint32) []
 			restLength := tick - lastNoteEndTime
 			if restLength != 0 {
 				lengths := noteLengthConverter(restLength)
-				restSmwNote := SmwNote{key: "r", lengthValues: lengths, octave: 0}
+				restSmwNote := SmwNote{Key: "r", LengthValues: lengths, Octave: 0}
 				smwTrack = append(smwTrack, restSmwNote)
 			}
 		}
