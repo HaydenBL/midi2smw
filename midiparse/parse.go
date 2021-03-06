@@ -18,26 +18,36 @@ const (
 	systemExclusive      uint8 = 0xF0
 )
 
-func parseHeader(file *os.File) (numTrackChunks uint16) {
+func parseHeader(file *os.File) (numTrackChunks uint16, err error) {
 	var val32 uint32 = 0
 	var val16 uint16 = 0
 
 	// First 4 bytes, file ID (always MThd)
-	binary.Read(file, binary.BigEndian, &val32)
+	if err := binary.Read(file, binary.BigEndian, &val32); err != nil {
+		return 0, err
+	}
 	// Next 4 bytes, length of header
-	binary.Read(file, binary.BigEndian, &val32)
+	if err := binary.Read(file, binary.BigEndian, &val32); err != nil {
+		return 0, err
+	}
 	// Next 2 bytes, format details
-	binary.Read(file, binary.BigEndian, &val16)
+	if err := binary.Read(file, binary.BigEndian, &val16); err != nil {
+		return 0, err
+	}
 	// Next 2 bytes, number of tracks
-	binary.Read(file, binary.BigEndian, &val16)
+	if err := binary.Read(file, binary.BigEndian, &val16); err != nil {
+		return 0, err
+	}
 	numTrackChunks = val16
-	// Next 2 bytes, division
-	binary.Read(file, binary.BigEndian, &val16)
+	// Next 2 bytes, time format
+	if err := binary.Read(file, binary.BigEndian, &val16); err != nil {
+		return 0, err
+	}
 
-	return numTrackChunks
+	return numTrackChunks, nil
 }
 
-func parseTrack(file *os.File) MidiTrack {
+func parseTrack(file *os.File) (MidiTrack, error) {
 	fmt.Println("----- TRACK FOUND")
 
 	var val32 uint32 = 0
@@ -62,7 +72,10 @@ func parseTrack(file *os.File) MidiTrack {
 
 		statusTimeDelta = readValue(file)
 		if err := binary.Read(file, binary.BigEndian, &status); err != nil {
-			eof = err == io.EOF
+			if err == io.EOF {
+				eof = true
+			}
+			return MidiTrack{}, err
 		}
 
 		// Sometimes midi files optimize data by putting consecutive midi events with the same
@@ -181,5 +194,5 @@ func parseTrack(file *os.File) MidiTrack {
 
 	}
 
-	return track
+	return track, nil
 }

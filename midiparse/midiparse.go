@@ -42,11 +42,16 @@ func Parse(fileName string) ([]MidiTrack, error) {
 	}
 	defer file.Close()
 
-	numTracks := parseHeader(file)
-
+	numTracks, err := parseHeader(file)
+	if err != nil {
+		return []MidiTrack{}, err
+	}
 	var midiTracks []MidiTrack
 	for track := 0; track < int(numTracks); track++ {
-		track := parseTrack(file)
+		track, err := parseTrack(file)
+		if err != nil {
+			return []MidiTrack{}, err
+		}
 		midiTracks = append(midiTracks, track)
 	}
 
