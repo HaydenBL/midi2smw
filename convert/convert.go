@@ -3,6 +3,7 @@ package convert
 import (
 	"fmt"
 	"midi2smw/midiparse"
+	"sort"
 )
 
 func Convert(midiTracks []midiparse.MidiTrack) [][]SmwNote {
@@ -16,9 +17,66 @@ func Convert(midiTracks []midiparse.MidiTrack) [][]SmwNote {
 	noteTracks := convertNotes(midiTracks)
 	noteTracks = quantizeNotesOnAllTracks(noteTracks, ticksPer64thNote)
 
+	noteTracks = blah(noteTracks)
+
 	tracks := createSmwChannelTracksForAllTracks(noteTracks, ticksPer64thNote)
 
 	return tracks
+}
+
+func blah(noteTracks []noteTrack) []noteTrack {
+	blahed := make([]noteTrack, 0)
+	for _, track := range noteTracks {
+		track := blahblah(track)
+		blahed = append(blahed, track)
+	}
+	return blahed
+}
+
+func blahblah(track noteTrack) noteTrack {
+	newNoteTrack := make([]midiNote, 0)
+	var sameNotes []midiNote
+	chain := false
+	for i := range track.Notes {
+		if i == len(track.Notes)-1 {
+			if chain {
+				sameNotes = append(sameNotes, track.Notes[i])
+				nthNote := getNthNote(sameNotes)
+				if nthNote != nil {
+					newNoteTrack = append(newNoteTrack, *nthNote)
+				}
+			}
+			continue
+		}
+		if track.Notes[i].StartTime == track.Notes[i+1].StartTime {
+			chain = true
+			sameNotes = append(sameNotes, track.Notes[i])
+		} else if chain {
+			sameNotes = append(sameNotes, track.Notes[i])
+
+			nthNote := getNthNote(sameNotes)
+			if nthNote != nil {
+				newNoteTrack = append(newNoteTrack, *nthNote)
+			}
+			chain = false
+			sameNotes = make([]midiNote, 0)
+		} else {
+			newNoteTrack = append(newNoteTrack, track.Notes[i])
+		}
+	}
+	track.Notes = newNoteTrack
+	return track
+}
+
+func getNthNote(notes []midiNote) *midiNote {
+	const n = 3
+	if !(len(notes) > n) {
+		return nil
+	}
+	sort.Slice(notes, func(i, j int) bool {
+		return notes[i].Key > notes[j].Key
+	})
+	return &notes[n]
 }
 
 func filterEmptyTracks(tracks []midiparse.MidiTrack) []midiparse.MidiTrack {

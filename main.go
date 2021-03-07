@@ -37,6 +37,9 @@ func beginParsing() {
 
 // temporary, just to test this thing
 func testPrint(smwTrack []convert.SmwNote) {
+	if len(smwTrack) == 0 {
+		return
+	}
 	lastOctave := smwTrack[0].Octave
 	fmt.Printf("Start octave: %d\n", lastOctave)
 	for _, smwNote := range smwTrack {
