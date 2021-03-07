@@ -6,7 +6,7 @@ import (
 	"sort"
 )
 
-func Convert(midiTracks []midiparse.MidiTrack) [][]SmwNote {
+func Convert(midiTracks []midiparse.MidiTrack) []SmwTrack {
 	fmt.Println("Converting midi tracks...")
 
 	var ticksPer64thNote uint32 = 30 // hardcoding for the track I'm working with, figure this out later
@@ -16,8 +16,6 @@ func Convert(midiTracks []midiparse.MidiTrack) [][]SmwNote {
 
 	noteTracks := convertNotes(midiTracks)
 	noteTracks = quantizeNotesOnAllTracks(noteTracks, ticksPer64thNote)
-
-	noteTracks = blah(noteTracks)
 
 	tracks := createSmwChannelTracksForAllTracks(noteTracks, ticksPer64thNote)
 
