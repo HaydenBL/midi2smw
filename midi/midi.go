@@ -1,4 +1,4 @@
-package midiparse
+package midi
 
 import (
 	"fmt"
@@ -15,17 +15,17 @@ var (
 
 type EventType uint8
 
-type MidiEvent struct {
+type Event struct {
 	Event     EventType
 	Key       uint8
 	Velocity  uint8
 	DeltaTick uint32
 }
 
-type MidiTrack struct {
+type Track struct {
 	Name       string
 	Instrument string
-	Events     []MidiEvent
+	Events     []Event
 }
 
 const (
@@ -34,7 +34,7 @@ const (
 	Other   EventType = 3
 )
 
-func Parse(fileName string) ([]MidiTrack, error) {
+func Parse(fileName string) ([]Track, error) {
 	file, err := os.Open(fileName)
 	if err != nil {
 		fmt.Println("Error reading file", err)
@@ -44,13 +44,13 @@ func Parse(fileName string) ([]MidiTrack, error) {
 
 	numTracks, err := parseHeader(file)
 	if err != nil {
-		return []MidiTrack{}, err
+		return []Track{}, err
 	}
-	var midiTracks []MidiTrack
+	var midiTracks []Track
 	for track := 0; track < int(numTracks); track++ {
 		track, err := parseTrack(file)
 		if err != nil {
-			return []MidiTrack{}, err
+			return []Track{}, err
 		}
 		midiTracks = append(midiTracks, track)
 	}

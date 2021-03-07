@@ -2,11 +2,11 @@ package convert
 
 import (
 	"fmt"
-	"midi2smw/midiparse"
+	"midi2smw/midi"
 	"sort"
 )
 
-func Convert(midiTracks []midiparse.MidiTrack) []SmwTrack {
+func Convert(midiTracks []midi.Track) []SmwTrack {
 	fmt.Println("Converting midi tracks...")
 
 	var ticksPer64thNote uint32 = 30 // hardcoding for the track I'm working with, figure this out later
@@ -77,8 +77,8 @@ func getNthNote(notes []midiNote) *midiNote {
 	return &notes[n]
 }
 
-func filterEmptyTracks(tracks []midiparse.MidiTrack) []midiparse.MidiTrack {
-	var nonEmptyTracks []midiparse.MidiTrack
+func filterEmptyTracks(tracks []midi.Track) []midi.Track {
+	var nonEmptyTracks []midi.Track
 	for _, track := range tracks {
 		if len(track.Events) != 0 {
 			nonEmptyTracks = append(nonEmptyTracks, track)
@@ -91,12 +91,12 @@ func filterEmptyTracks(tracks []midiparse.MidiTrack) []midiparse.MidiTrack {
 	return nonEmptyTracks
 }
 
-func filterOtherEventTypes(tracks []midiparse.MidiTrack) []midiparse.MidiTrack {
-	var filteredTracks []midiparse.MidiTrack
+func filterOtherEventTypes(tracks []midi.Track) []midi.Track {
+	var filteredTracks []midi.Track
 	for _, track := range tracks {
-		var filteredEvents []midiparse.MidiEvent
+		var filteredEvents []midi.Event
 		for _, event := range track.Events {
-			if event.Event != midiparse.Other {
+			if event.Event != midi.Other {
 				filteredEvents = append(filteredEvents, event)
 			}
 		}

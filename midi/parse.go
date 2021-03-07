@@ -1,4 +1,4 @@
-package midiparse
+package midi
 
 import (
 	"encoding/binary"
@@ -47,7 +47,7 @@ func parseHeader(file *os.File) (numTrackChunks uint16, err error) {
 	return numTrackChunks, nil
 }
 
-func parseTrack(file *os.File) (MidiTrack, error) {
+func parseTrack(file *os.File) (Track, error) {
 	fmt.Println("----- TRACK FOUND")
 
 	var val32 uint32 = 0
@@ -64,7 +64,7 @@ func parseTrack(file *os.File) (MidiTrack, error) {
 	var endOfTrack = false
 	var previousStatus uint8 = 0
 
-	track := MidiTrack{}
+	track := Track{}
 
 	for !endOfTrack && !eof {
 		var statusTimeDelta uint32 = 0
@@ -75,7 +75,7 @@ func parseTrack(file *os.File) (MidiTrack, error) {
 			if err == io.EOF {
 				eof = true
 			}
-			return MidiTrack{}, err
+			return Track{}, err
 		}
 
 		// Sometimes midi files optimize data by putting consecutive midi events with the same
@@ -98,7 +98,7 @@ func parseTrack(file *os.File) (MidiTrack, error) {
 				eof = err == io.EOF
 			}
 
-			track.Events = append(track.Events, MidiEvent{NoteOff, noteID, noteVelocity, statusTimeDelta})
+			track.Events = append(track.Events, Event{NoteOff, noteID, noteVelocity, statusTimeDelta})
 
 		} else if (status & 0xF0) == voiceNoteOn {
 			//var channel uint8
@@ -111,9 +111,9 @@ func parseTrack(file *os.File) (MidiTrack, error) {
 			}
 
 			if noteVelocity == 0 {
-				track.Events = append(track.Events, MidiEvent{NoteOff, noteID, noteVelocity, statusTimeDelta})
+				track.Events = append(track.Events, Event{NoteOff, noteID, noteVelocity, statusTimeDelta})
 			} else {
-				track.Events = append(track.Events, MidiEvent{NoteOn, noteID, noteVelocity, statusTimeDelta})
+				track.Events = append(track.Events, Event{NoteOn, noteID, noteVelocity, statusTimeDelta})
 			}
 
 		} else if (status & 0xF0) == voiceAftertouch {
@@ -126,7 +126,7 @@ func parseTrack(file *os.File) (MidiTrack, error) {
 				eof = err == io.EOF
 			}
 
-			track.Events = append(track.Events, MidiEvent{Other, 0, 0, 0})
+			track.Events = append(track.Events, Event{Other, 0, 0, 0})
 
 		} else if (status & 0xF0) == voiceControlChange {
 			//var channel uint8
@@ -138,7 +138,7 @@ func parseTrack(file *os.File) (MidiTrack, error) {
 				eof = err == io.EOF
 			}
 
-			track.Events = append(track.Events, MidiEvent{Other, 0, 0, 0})
+			track.Events = append(track.Events, Event{Other, 0, 0, 0})
 
 		} else if (status & 0xF0) == voiceProgramChange {
 			//var channel uint8
@@ -149,7 +149,7 @@ func parseTrack(file *os.File) (MidiTrack, error) {
 				eof = err == io.EOF
 			}
 
-			track.Events = append(track.Events, MidiEvent{Other, 0, 0, 0})
+			track.Events = append(track.Events, Event{Other, 0, 0, 0})
 
 		} else if (status & 0xF0) == voiceChannelPressure {
 			//var channel uint8
@@ -160,7 +160,7 @@ func parseTrack(file *os.File) (MidiTrack, error) {
 				eof = err == io.EOF
 			}
 
-			track.Events = append(track.Events, MidiEvent{Other, 0, 0, 0})
+			track.Events = append(track.Events, Event{Other, 0, 0, 0})
 
 		} else if (status & 0xF0) == voicePitchBend {
 			//var channel uint8
@@ -172,7 +172,7 @@ func parseTrack(file *os.File) (MidiTrack, error) {
 				eof = err == io.EOF
 			}
 
-			track.Events = append(track.Events, MidiEvent{Other, 0, 0, 0})
+			track.Events = append(track.Events, Event{Other, 0, 0, 0})
 
 		} else if (status & 0xF0) == systemExclusive {
 			previousStatus = 0

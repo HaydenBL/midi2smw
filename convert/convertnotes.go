@@ -2,7 +2,7 @@ package convert
 
 import (
 	"fmt"
-	"midi2smw/midiparse"
+	"midi2smw/midi"
 )
 
 type midiNote struct {
@@ -18,7 +18,7 @@ type noteTrack struct {
 	MinNote uint8
 }
 
-func convertNotes(tracks []midiparse.MidiTrack) []noteTrack {
+func convertNotes(tracks []midi.Track) []noteTrack {
 	var noteTracks = make([]noteTrack, len(tracks))
 
 	for trackIndex, track := range tracks {
@@ -27,10 +27,10 @@ func convertNotes(tracks []midiparse.MidiTrack) []noteTrack {
 
 		for _, event := range track.Events {
 			wallTime += event.DeltaTick
-			if event.Event == midiparse.NoteOn {
+			if event.Event == midi.NoteOn {
 				notesBeingProcessed = append(notesBeingProcessed, midiNote{event.Key, event.Velocity, wallTime, 0})
 			}
-			if event.Event == midiparse.NoteOff {
+			if event.Event == midi.NoteOff {
 				i, note := findNoteIndex(notesBeingProcessed, event.Key)
 				if i != -1 {
 					note.Duration = wallTime - note.StartTime

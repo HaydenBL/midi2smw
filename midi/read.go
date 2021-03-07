@@ -1,4 +1,4 @@
-package midiparse
+package midi
 
 import (
 	"encoding/binary"

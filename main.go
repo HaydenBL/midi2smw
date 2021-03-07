@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"midi2smw/convert"
-	"midi2smw/midiparse"
+	"midi2smw/midi"
 	"midi2smw/write"
 )
 
@@ -16,7 +16,7 @@ func beginParsing() {
 
 	fmt.Printf("========== BEGIN PARSING ==========\n\n")
 
-	midiTracks, err := midiparse.Parse(filename)
+	midiTracks, err := midi.Parse(filename)
 	if err != nil {
 		fmt.Printf("Error parsing midi file: %s\n", filename)
 		return

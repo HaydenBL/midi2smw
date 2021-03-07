@@ -1,4 +1,4 @@
-package midiparse
+package midi
 
 import (
 	"encoding/binary"
@@ -24,7 +24,7 @@ const (
 	metaSequencerSpecific uint8 = 0x7F
 )
 
-func handleMetaType(file *os.File, track MidiTrack) (endOfTrack bool) {
+func handleMetaType(file *os.File, track Track) (endOfTrack bool) {
 	var metaType, length uint8
 
 	binary.Read(file, binary.BigEndian, &metaType)
