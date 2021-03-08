@@ -2,7 +2,7 @@
 
 ---
 
-###Overview
+### Overview
 
 This project's aim is to simplify the process of porting a song into Super Mario World via AddMusicK.
 It reads in a midi file, parses the events, gets out the important ones (note on/off), converts them
@@ -19,7 +19,7 @@ of the track with rests so all channels will be properly synced up when played t
 Currently, the project has no third-party dependencies, so it's pretty easily to get up and running
 locally if you want to tweak something yourself.
 
-###TODO
+### TODO
 * Figure out how to automatically calculate how many ticks corresponds to a 64th note (currently
   hardcoded for the file I'm working with while building it)
 * Output to a file
