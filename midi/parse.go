@@ -186,6 +186,7 @@ func parseTrack(file *os.File) (Track, error) {
 
 			if status == 0xFF {
 				endOfTrack = handleMetaType(file, track)
+				track.Events = append(track.Events, Event{Other, 0, 0, statusTimeDelta})
 			}
 
 		} else {

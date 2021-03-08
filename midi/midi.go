@@ -47,7 +47,7 @@ func Parse(fileName string) ([]Track, error) {
 		return []Track{}, err
 	}
 	var midiTracks []Track
-	for track := 0; track < int(numTracks); track++ {
+	for i := 0; i < int(numTracks); i++ {
 		track, err := parseTrack(file)
 		if err != nil {
 			return []Track{}, err
