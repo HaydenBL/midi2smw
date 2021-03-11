@@ -15,8 +15,8 @@ const (
 	metaLyrics            uint8 = 0x05
 	metaMarker            uint8 = 0x06
 	metaCuePoint          uint8 = 0x07
-	metaProgramName       uint8 = 0x8
-	metaDevicePort        uint8 = 0x9
+	metaProgramName       uint8 = 0x08
+	metaDevicePort        uint8 = 0x09
 	metaChannelPrefix     uint8 = 0x20
 	metaMIDIPort          uint8 = 0x21
 	metaEndOfTrack        uint8 = 0x2F

@@ -1,7 +1,5 @@
 ## midi2smw
 
----
-
 ### Overview
 
 This project's aim is to simplify the process of porting a song into Super Mario World via AddMusicK.
