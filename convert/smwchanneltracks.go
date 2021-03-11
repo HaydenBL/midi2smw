@@ -147,8 +147,8 @@ func noteValueToSmwKey(note midiNote) (key string, octave int) {
 	// Lowest SMW note is g0 == 19
 	// Highest SMW note is e6 == 88
 	if noteValue < 19 || noteValue > 88 {
-		fmt.Printf("Error, cannot convert note value %d to SMW note (out of range)\n", noteValue)
-		return "", -999
+		fmt.Printf("Error, cannot convert note value %d to SMW note (out of range). Inserting rest\n", noteValue)
+		return "r", 0
 	}
 	key = noteDict[int(noteValue%12)]
 	octave = int(noteValue/12) - 1

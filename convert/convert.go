@@ -5,10 +5,8 @@ import (
 	"midi2smw/midi"
 )
 
-func Convert(midiTracks []midi.Track) []SmwTrack {
+func Convert(midiTracks []midi.Track, ticksPer64thNote uint32) []SmwTrack {
 	fmt.Println("Converting midi tracks...")
-
-	var ticksPer64thNote uint32 = 30 // hardcoding for the track I'm working with, figure this out later
 
 	midiTracks = filterOtherEventTypes(midiTracks)
 	midiTracks = filterEmptyTracks(midiTracks)

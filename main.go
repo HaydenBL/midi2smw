@@ -12,7 +12,8 @@ func main() {
 }
 
 func beginParsing() {
-	filename := "dean_town.mid"
+	filename := "silver_street.mid"
+	var ticksPer64thNote uint32 = 10 // hardcoding for the track I'm working with, figure this out later
 
 	fmt.Printf("========== BEGIN PARSING ==========\n\n")
 
@@ -24,7 +25,7 @@ func beginParsing() {
 
 	fmt.Printf("\n\n\n========== BEGIN CONVERTING ==========\n\n")
 
-	tracks := convert.Convert(midiTracks)
+	tracks := convert.Convert(midiTracks, ticksPer64thNote)
 
 	fmt.Printf("\n\n\n========== BEGIN WRITING ==========\n\n")
 
