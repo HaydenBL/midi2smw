@@ -88,9 +88,9 @@ func createSmwChannelTrack(notes []midiNote, length uint32, noteLengthConverter 
 			smwChannel = append(smwChannel, smwNote)
 			lastNoteEndTime = activeNote.StartTime + activeNote.Duration
 		}
-		if tick-1 != length {
+		if lastNoteEndTime < length {
 			// pad out ending with rest so we don't prematurely loop when a track ends
-			restLength := length - tick + 1
+			restLength := length - lastNoteEndTime
 			lengths := noteLengthConverter(restLength)
 			restSmwNote := SmwNote{Key: "r", LengthValues: lengths, Octave: 0}
 			smwChannel = append(smwChannel, restSmwNote)
