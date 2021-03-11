@@ -15,7 +15,10 @@ const (
 	metaLyrics            uint8 = 0x05
 	metaMarker            uint8 = 0x06
 	metaCuePoint          uint8 = 0x07
+	metaProgramName       uint8 = 0x8
+	metaDevicePort        uint8 = 0x9
 	metaChannelPrefix     uint8 = 0x20
+	metaMIDIPort          uint8 = 0x21
 	metaEndOfTrack        uint8 = 0x2F
 	metaSetTempo          uint8 = 0x51
 	metaSMPTEOffset       uint8 = 0x54
@@ -61,28 +64,38 @@ func handleMetaType(file *os.File, track Track) (endOfTrack bool) {
 	case metaCuePoint:
 		fmt.Printf("Cue: %s\n", readString(file, uint32(length)))
 
+	case metaProgramName:
+		fmt.Printf("Meta program name: %s\n", readString(file, uint32(length)))
+
+	case metaDevicePort:
+		fmt.Printf("Meta device port: %s\n", readString(file, uint32(length)))
+
 	case metaChannelPrefix:
 		var prefix uint8
 		binary.Read(file, binary.BigEndian, &prefix)
 		fmt.Printf("Prefix: %d\n", prefix)
+
+	case metaMIDIPort:
+		var port uint8
+		binary.Read(file, binary.BigEndian, port)
+		fmt.Printf("MIDI port: %d\n", port)
 
 	case metaEndOfTrack:
 		endOfTrack = true
 
 	case metaSetTempo:
 		// Tempo is in microseconds per quarter note
-		if globalTempo == 0 {
-			var b uint8
-			binary.Read(file, binary.BigEndian, &b)
-			globalTempo |= uint32(b) << 16
-			binary.Read(file, binary.BigEndian, &b)
-			globalTempo |= uint32(b) << 8
-			binary.Read(file, binary.BigEndian, &b)
-			globalTempo |= uint32(b) << 0
-			globalBPM = 60000000 / globalTempo
+		globalTempo = 0
+		var b uint8
+		binary.Read(file, binary.BigEndian, &b)
+		globalTempo |= uint32(b) << 16
+		binary.Read(file, binary.BigEndian, &b)
+		globalTempo |= uint32(b) << 8
+		binary.Read(file, binary.BigEndian, &b)
+		globalTempo |= uint32(b) << 0
+		globalBPM = 60000000 / globalTempo
 
-			fmt.Printf("Tempo: %d (%d bpm)\n", globalTempo, globalBPM)
-		}
+		fmt.Printf("Tempo: %d (%d bpm)\n", globalTempo, globalBPM)
 
 	case metaSMPTEOffset:
 		var h, m, s, fr, ff uint8

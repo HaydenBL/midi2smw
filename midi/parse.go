@@ -126,7 +126,7 @@ func parseTrack(file *os.File) (Track, error) {
 				eof = err == io.EOF
 			}
 
-			track.Events = append(track.Events, Event{Other, 0, 0, 0})
+			track.Events = append(track.Events, Event{Other, 0, 0, statusTimeDelta})
 
 		} else if (status & 0xF0) == voiceControlChange {
 			//var channel uint8
@@ -138,7 +138,7 @@ func parseTrack(file *os.File) (Track, error) {
 				eof = err == io.EOF
 			}
 
-			track.Events = append(track.Events, Event{Other, 0, 0, 0})
+			track.Events = append(track.Events, Event{Other, 0, 0, statusTimeDelta})
 
 		} else if (status & 0xF0) == voiceProgramChange {
 			//var channel uint8
@@ -149,7 +149,7 @@ func parseTrack(file *os.File) (Track, error) {
 				eof = err == io.EOF
 			}
 
-			track.Events = append(track.Events, Event{Other, 0, 0, 0})
+			track.Events = append(track.Events, Event{Other, 0, 0, statusTimeDelta})
 
 		} else if (status & 0xF0) == voiceChannelPressure {
 			//var channel uint8
@@ -160,7 +160,7 @@ func parseTrack(file *os.File) (Track, error) {
 				eof = err == io.EOF
 			}
 
-			track.Events = append(track.Events, Event{Other, 0, 0, 0})
+			track.Events = append(track.Events, Event{Other, 0, 0, statusTimeDelta})
 
 		} else if (status & 0xF0) == voicePitchBend {
 			//var channel uint8
@@ -172,7 +172,7 @@ func parseTrack(file *os.File) (Track, error) {
 				eof = err == io.EOF
 			}
 
-			track.Events = append(track.Events, Event{Other, 0, 0, 0})
+			track.Events = append(track.Events, Event{Other, 0, 0, statusTimeDelta})
 
 		} else if (status & 0xF0) == systemExclusive {
 			previousStatus = 0

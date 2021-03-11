@@ -12,7 +12,7 @@ func main() {
 }
 
 func beginParsing() {
-	filename := "dean_town.mid"
+	filename := "tee_time.mid"
 
 	fmt.Printf("========== BEGIN PARSING ==========\n\n")
 
