@@ -8,11 +8,6 @@ import (
 // Much of this parsing code was written with the help of OLC's midi parsing implementation in C++
 // https://github.com/OneLoneCoder/olcPixelGameEngine/blob/master/Videos/OneLoneCoder_PGE_MIDI.cpp
 
-var (
-	globalTempo uint32 = 0
-	globalBPM   uint32 = 0
-)
-
 type EventType uint8
 
 type Event struct {
@@ -28,34 +23,48 @@ type Track struct {
 	Events     []Event
 }
 
+type MidiFile struct {
+	MidiTracks       []Track
+	Bpm              uint32
+	TicksPer64thNote uint32
+}
+
 const (
 	NoteOff EventType = 0
 	NoteOn  EventType = 1
-	Other   EventType = 3
+	Other   EventType = 2
 )
 
-func Parse(fileName string) ([]Track, error) {
+func Parse(fileName string) (MidiFile, error) {
+	var mf MidiFile
+
 	file, err := os.Open(fileName)
 	if err != nil {
 		fmt.Println("Error reading file", err)
-		return nil, err
+		return MidiFile{}, err
 	}
 	defer file.Close()
 
-	numTracks, err := parseHeader(file)
+	var numTracks uint16
+	numTracks, mf.TicksPer64thNote, err = parseHeader(file)
 	if err != nil {
-		return []Track{}, err
+		return MidiFile{}, err
 	}
-	var midiTracks []Track
+
 	for i := 0; i < int(numTracks); i++ {
-		track, err := parseTrack(file)
+		track, bpm, err := parseTrack(file)
 		if err != nil {
-			return []Track{}, err
+			return MidiFile{}, err
 		}
-		midiTracks = append(midiTracks, track)
+		if mf.Bpm == 0 {
+			mf.Bpm = bpm
+		}
+		mf.MidiTracks = append(mf.MidiTracks, track)
 	}
 
-	fmt.Printf("\nFound %d tracks\n", len(midiTracks))
+	fmt.Printf("\nFound %d tracks\n", len(mf.MidiTracks))
+	fmt.Printf("%dBPM\n", mf.Bpm)
+	fmt.Printf("Ticks per 64th note: %d\n", mf.TicksPer64thNote)
 
-	return midiTracks, nil
+	return mf, nil
 }

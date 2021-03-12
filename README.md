@@ -18,8 +18,6 @@ Currently, the project has no third-party dependencies, so it's pretty easily to
 locally if you want to tweak something yourself.
 
 ### TODO
-* Figure out how to automatically calculate how many ticks corresponds to a 64th note (currently
-  hardcoded for the file I'm working with while building it)
 * Output to a file
 * Optimize outputs (loops, dotted notes)
 * Import file and whatever else from command line argument (currently hardcoding path)

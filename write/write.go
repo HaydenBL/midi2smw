@@ -2,15 +2,23 @@ package write
 
 import (
 	"fmt"
+	"math"
 	"midi2smw/convert"
 )
 
-func AllTracks(tracks []convert.SmwTrack) {
+func AllTracks(tracks []convert.SmwTrack, bpm uint32) {
 	for i, track := range tracks {
 		fmt.Printf("---- Printing track %d\n\n", i)
 		Track(track)
 		fmt.Println()
 	}
+	fmt.Printf("SMW tempo: %d\n", bpmToSmwTempo(bpm))
+}
+
+func bpmToSmwTempo(bpm uint32) uint8 {
+	const multiplier = float64(256) / 625
+	tempo := math.Round(float64(bpm) * multiplier)
+	return uint8(tempo)
 }
 
 func Track(track convert.SmwTrack) {

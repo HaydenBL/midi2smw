@@ -5,16 +5,16 @@ import (
 	"midi2smw/midi"
 )
 
-func Convert(midiTracks []midi.Track, ticksPer64thNote uint32) []SmwTrack {
+func Convert(midiFile midi.MidiFile) []SmwTrack {
 	fmt.Println("Converting midi tracks...")
 
-	midiTracks = filterOtherEventTypes(midiTracks)
-	midiTracks = filterEmptyTracks(midiTracks)
+	filteredTracks := filterOtherEventTypes(midiFile.MidiTracks)
+	filteredTracks = filterEmptyTracks(filteredTracks)
 
-	noteTracks := convertNotes(midiTracks)
-	noteTracks = quantizeNotesOnAllTracks(noteTracks, ticksPer64thNote)
+	noteTracks := convertNotes(filteredTracks)
+	noteTracks = quantizeNotesOnAllTracks(noteTracks, midiFile.TicksPer64thNote)
 
-	tracks := createSmwChannelTracksForAllTracks(noteTracks, ticksPer64thNote)
+	tracks := createSmwChannelTracksForAllTracks(noteTracks, midiFile.TicksPer64thNote)
 
 	return tracks
 }

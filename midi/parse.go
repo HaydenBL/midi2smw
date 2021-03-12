@@ -2,6 +2,7 @@ package midi
 
 import (
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -18,36 +19,45 @@ const (
 	systemExclusive      uint8 = 0xF0
 )
 
-func parseHeader(file *os.File) (numTrackChunks uint16, err error) {
+func parseHeader(file *os.File) (numTrackChunks uint16, ticksPer64thNote uint32, err error) {
 	var val32 uint32 = 0
 	var val16 uint16 = 0
 
 	// First 4 bytes, file ID (always MThd)
 	if err := binary.Read(file, binary.BigEndian, &val32); err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 	// Next 4 bytes, length of header
 	if err := binary.Read(file, binary.BigEndian, &val32); err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 	// Next 2 bytes, format details
 	if err := binary.Read(file, binary.BigEndian, &val16); err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 	// Next 2 bytes, number of tracks
-	if err := binary.Read(file, binary.BigEndian, &val16); err != nil {
-		return 0, err
+	if err := binary.Read(file, binary.BigEndian, &numTrackChunks); err != nil {
+		return 0, 0, err
 	}
-	numTrackChunks = val16
-	// Next 2 bytes, time format
-	if err := binary.Read(file, binary.BigEndian, &val16); err != nil {
-		return 0, err
+	var division uint16
+	// Next 2 bytes, time division
+	if err := binary.Read(file, binary.BigEndian, &division); err != nil {
+		return 0, 0, err
 	}
 
-	return numTrackChunks, nil
+	// If bit 15 is zero, bits 0-14 is ticks per quarter note
+	if division&0x8000 == 0x0000 {
+		ticksPerQuarterNote := division & 0x7FFF
+		ticksPer64thNote = uint32(ticksPerQuarterNote / 16)
+
+	} else {
+		return 0, 0, errors.New("unsupported time format")
+	}
+
+	return numTrackChunks, ticksPer64thNote, nil
 }
 
-func parseTrack(file *os.File) (Track, error) {
+func parseTrack(file *os.File) (track Track, trackBpm uint32, err error) {
 	fmt.Println("----- TRACK FOUND")
 
 	var val32 uint32 = 0
@@ -64,7 +74,7 @@ func parseTrack(file *os.File) (Track, error) {
 	var endOfTrack = false
 	var previousStatus uint8 = 0
 
-	track := Track{}
+	track = Track{}
 
 	for !endOfTrack && !eof {
 		var statusTimeDelta uint32 = 0
@@ -75,7 +85,7 @@ func parseTrack(file *os.File) (Track, error) {
 			if err == io.EOF {
 				eof = true
 			}
-			return Track{}, err
+			return Track{}, 0, err
 		}
 
 		// Sometimes midi files optimize data by putting consecutive midi events with the same
@@ -185,7 +195,11 @@ func parseTrack(file *os.File) (Track, error) {
 			}
 
 			if status == 0xFF {
-				endOfTrack = handleMetaType(file, track)
+				var bpm uint32
+				bpm, endOfTrack = handleMetaType(file, track)
+				if trackBpm == 0 {
+					trackBpm = bpm
+				}
 				track.Events = append(track.Events, Event{Other, 0, 0, statusTimeDelta})
 			}
 
@@ -195,5 +209,5 @@ func parseTrack(file *os.File) (Track, error) {
 
 	}
 
-	return track, nil
+	return track, trackBpm, nil
 }

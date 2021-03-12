@@ -27,7 +27,7 @@ const (
 	metaSequencerSpecific uint8 = 0x7F
 )
 
-func handleMetaType(file *os.File, track Track) (endOfTrack bool) {
+func handleMetaType(file *os.File, track Track) (bpm uint32, endOfTrack bool) {
 	var metaType, length uint8
 
 	binary.Read(file, binary.BigEndian, &metaType)
@@ -85,17 +85,17 @@ func handleMetaType(file *os.File, track Track) (endOfTrack bool) {
 
 	case metaSetTempo:
 		// Tempo is in microseconds per quarter note
-		globalTempo = 0
+		var tempo uint32 = 0
 		var b uint8
 		binary.Read(file, binary.BigEndian, &b)
-		globalTempo |= uint32(b) << 16
+		tempo |= uint32(b) << 16
 		binary.Read(file, binary.BigEndian, &b)
-		globalTempo |= uint32(b) << 8
+		tempo |= uint32(b) << 8
 		binary.Read(file, binary.BigEndian, &b)
-		globalTempo |= uint32(b) << 0
-		globalBPM = 60000000 / globalTempo
+		tempo |= uint32(b) << 0
+		bpm = 60000000 / tempo
 
-		fmt.Printf("Tempo: %d (%d bpm)\n", globalTempo, globalBPM)
+		fmt.Printf("Tempo: %d (%d bpm)\n", tempo, bpm)
 
 	case metaSMPTEOffset:
 		var h, m, s, fr, ff uint8

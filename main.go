@@ -13,11 +13,10 @@ func main() {
 
 func beginParsing() {
 	filename := "silver_street.mid"
-	var ticksPer64thNote uint32 = 10 // hardcoding for the track I'm working with, figure this out later
 
 	fmt.Printf("========== BEGIN PARSING ==========\n\n")
 
-	midiTracks, err := midi.Parse(filename)
+	midiFile, err := midi.Parse(filename)
 	if err != nil {
 		fmt.Printf("Error parsing midi file: %s\n", filename)
 		return
@@ -25,11 +24,11 @@ func beginParsing() {
 
 	fmt.Printf("\n\n\n========== BEGIN CONVERTING ==========\n\n")
 
-	tracks := convert.Convert(midiTracks, ticksPer64thNote)
+	tracks := convert.Convert(midiFile)
 
 	fmt.Printf("\n\n\n========== BEGIN WRITING ==========\n\n")
 
-	write.AllTracks(tracks)
+	write.AllTracks(tracks, midiFile.Bpm)
 
 	fmt.Printf("\n\n\n========== COMPLETE ==========\n")
 }
