@@ -168,21 +168,21 @@ func TestNoteValueToSmwKey(t *testing.T) {
 	// too low for SMW note
 	for k = 0; k < 19; k++ {
 		key, octave := noteValueToSmwKey(midiNote{Key: k})
-		if key != "" || octave != -999 {
+		if key != "r" || octave != 0 {
 			t.Fatalf("Should error when key value too low")
 		}
 	}
 	// valid SMW note range
 	for k = 19; k < 89; k++ {
 		key, _ := noteValueToSmwKey(midiNote{Key: k})
-		if key == "" {
+		if key == "r" {
 			t.Fatalf("Shouldn't error when key value is within range")
 		}
 	}
 	// too high for SMW note
 	for k = 89; k < 128; k++ {
 		key, octave := noteValueToSmwKey(midiNote{Key: k})
-		if key != "" || octave != -999 {
+		if key != "r" || octave != 0 {
 			t.Fatalf("Should error when key value too high")
 		}
 	}
