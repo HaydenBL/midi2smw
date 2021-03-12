@@ -1,4 +1,6 @@
-## midi2smw
+# midi2smw
+
+[![ci-test](https://github.com/HaydenBL/midi2smw/actions/workflows/ci.yml/badge.svg)](https://github.com/HaydenBL/midi2smw/actions/workflows/ci.yml)
 
 ### Overview
 
