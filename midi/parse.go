@@ -49,7 +49,6 @@ func parseHeader(file *os.File) (numTrackChunks uint16, ticksPer64thNote uint32,
 	if division&0x8000 == 0x0000 {
 		ticksPerQuarterNote := division & 0x7FFF
 		ticksPer64thNote = uint32(ticksPerQuarterNote / 16)
-
 	} else {
 		return 0, 0, errors.New("unsupported time format")
 	}
