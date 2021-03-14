@@ -46,7 +46,7 @@ func parseHeader(file *os.File) (numTrackChunks uint16, ticksPer64thNote uint32,
 	}
 
 	// If bit 15 is zero, bits 0-14 is ticks per quarter note
-	if division&0x8000 == 0x0000 {
+	if division&0x8000 == 0 {
 		ticksPerQuarterNote := division & 0x7FFF
 		ticksPer64thNote = uint32(ticksPerQuarterNote / 16)
 	} else {
@@ -56,157 +56,50 @@ func parseHeader(file *os.File) (numTrackChunks uint16, ticksPer64thNote uint32,
 	return numTrackChunks, ticksPer64thNote, nil
 }
 
-func parseTrack(file *os.File) (track Track, trackBpm uint32, err error) {
+func parseTrack(file *os.File) (Track, error) {
 	fmt.Println("----- TRACK FOUND")
 
-	var val32 uint32 = 0
-	var eof = false
+	var track = &Track{}
+	var sc = &scanContext{}
+	var MTrk uint32 = 0
+	var endOfTrack = false
 
 	// Read track header
 	// First 4 bytes, file ID (always MTrk)
-	binary.Read(file, binary.BigEndian, &val32)
+	binary.Read(file, binary.BigEndian, &MTrk)
 	// Next 4 bytes are track length
-	if err := binary.Read(file, binary.BigEndian, &val32); err != nil {
-		eof = err == io.EOF
-	}
-
-	var endOfTrack = false
-	var previousStatus uint8 = 0
-
-	track = Track{}
-
-	for !endOfTrack && !eof {
-		var statusTimeDelta uint32 = 0
-		var status uint8 = 0
-
-		statusTimeDelta = readValue(file)
-		if err := binary.Read(file, binary.BigEndian, &status); err != nil {
-			if err == io.EOF {
-				eof = true
-			}
-			return Track{}, 0, err
-		}
-
-		// Sometimes midi files optimize data by putting consecutive midi events with the same
-		// status byte next to each other, not repeating the status bytes.
-		// If we encounter a byte without the status flag set, it means we've run into this case
-		// and we have to seek back one byte because it was actually an event!
-		if status < 0x80 {
-			status = previousStatus
-			file.Seek(-1, 1) // seek back 1 byte from current position
-		}
-
-		if (status & 0xF0) == voiceNoteOff {
-			//var channel uint8
-			var noteID, noteVelocity uint8
-			previousStatus = status
-			//channel = status & 0x0F
-
-			binary.Read(file, binary.BigEndian, &noteID)
-			if err := binary.Read(file, binary.BigEndian, &noteVelocity); err != nil {
-				eof = err == io.EOF
-			}
-
-			track.Events = append(track.Events, Event{NoteOff, noteID, noteVelocity, statusTimeDelta})
-
-		} else if (status & 0xF0) == voiceNoteOn {
-			//var channel uint8
-			var noteID, noteVelocity uint8
-			previousStatus = status
-			//channel = status & 0x0F
-			binary.Read(file, binary.BigEndian, &noteID)
-			if err := binary.Read(file, binary.BigEndian, &noteVelocity); err != nil {
-				eof = err == io.EOF
-			}
-
-			if noteVelocity == 0 {
-				track.Events = append(track.Events, Event{NoteOff, noteID, noteVelocity, statusTimeDelta})
-			} else {
-				track.Events = append(track.Events, Event{NoteOn, noteID, noteVelocity, statusTimeDelta})
-			}
-
-		} else if (status & 0xF0) == voiceAftertouch {
-			//var channel uint8
-			var noteID, noteVelocity uint8
-			previousStatus = status
-			//channel = status & 0x0F
-			binary.Read(file, binary.BigEndian, &noteID)
-			if err := binary.Read(file, binary.BigEndian, &noteVelocity); err != nil {
-				eof = err == io.EOF
-			}
-
-			track.Events = append(track.Events, Event{Other, 0, 0, statusTimeDelta})
-
-		} else if (status & 0xF0) == voiceControlChange {
-			//var channel uint8
-			var controlID, controlValue uint8
-			previousStatus = status
-			//channel = status & 0x0F
-			binary.Read(file, binary.BigEndian, &controlID)
-			if err := binary.Read(file, binary.BigEndian, &controlValue); err != nil {
-				eof = err == io.EOF
-			}
-
-			track.Events = append(track.Events, Event{Other, 0, 0, statusTimeDelta})
-
-		} else if (status & 0xF0) == voiceProgramChange {
-			//var channel uint8
-			var programID uint8
-			previousStatus = status
-			//channel = status & 0x0F
-			if err := binary.Read(file, binary.BigEndian, &programID); err != nil {
-				eof = err == io.EOF
-			}
-
-			track.Events = append(track.Events, Event{Other, 0, 0, statusTimeDelta})
-
-		} else if (status & 0xF0) == voiceChannelPressure {
-			//var channel uint8
-			var channelPressure uint8
-			previousStatus = status
-			//channel = status & 0x0F
-			if err := binary.Read(file, binary.BigEndian, &channelPressure); err != nil {
-				eof = err == io.EOF
-			}
-
-			track.Events = append(track.Events, Event{Other, 0, 0, statusTimeDelta})
-
-		} else if (status & 0xF0) == voicePitchBend {
-			//var channel uint8
-			var LS7B, MS7B uint8
-			previousStatus = status
-			//channel = status & 0x0F
-			binary.Read(file, binary.BigEndian, &LS7B)
-			if err := binary.Read(file, binary.BigEndian, &MS7B); err != nil {
-				eof = err == io.EOF
-			}
-
-			track.Events = append(track.Events, Event{Other, 0, 0, statusTimeDelta})
-
-		} else if (status & 0xF0) == systemExclusive {
-			previousStatus = 0
-			if status == 0xF0 {
-				fmt.Printf("System exclusive message begin: %s\n", readString(file, readValue(file)))
-			}
-
-			if status == 0xF7 {
-				fmt.Printf("System exclusive message end: %s\n", readString(file, readValue(file)))
-			}
-
-			if status == 0xFF {
-				var bpm uint32
-				bpm, endOfTrack = handleMetaType(file, track)
-				if trackBpm == 0 {
-					trackBpm = bpm
-				}
-				track.Events = append(track.Events, Event{Other, 0, 0, statusTimeDelta})
-			}
-
+	if err := binary.Read(file, binary.BigEndian, &track.Length); err != nil {
+		if err == io.EOF {
+			endOfTrack = true
 		} else {
-			fmt.Printf("Unrecognized status byte: %d\n", status)
+			return *track, err
+		}
+	}
+
+	for !endOfTrack {
+		var event *Event = nil
+		var err error
+
+		sc.statusTimeDelta = readValue(file)
+		if err = readStatus(file, sc); err != nil {
+			if err == io.EOF {
+				endOfTrack = true
+			} else {
+				return *track, err
+			}
+		}
+		if event, err = handleStatus(file, track, sc); err != nil {
+			if err == io.EOF {
+				endOfTrack = true
+			} else {
+				return *track, err
+			}
+		}
+		if event != nil {
+			track.Events = append(track.Events, *event)
 		}
 
 	}
 
-	return track, trackBpm, nil
+	return *track, nil
 }

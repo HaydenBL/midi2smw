@@ -20,6 +20,8 @@ type Event struct {
 type Track struct {
 	Name       string
 	Instrument string
+	Length     uint32
+	Bpm        uint32
 	Events     []Event
 }
 
@@ -52,12 +54,12 @@ func Parse(fileName string) (MidiFile, error) {
 	}
 
 	for i := 0; i < int(numTracks); i++ {
-		track, bpm, err := parseTrack(file)
+		track, err := parseTrack(file)
 		if err != nil {
 			return MidiFile{}, err
 		}
 		if mf.Bpm == 0 {
-			mf.Bpm = bpm
+			mf.Bpm = track.Bpm
 		}
 		mf.MidiTracks = append(mf.MidiTracks, track)
 	}

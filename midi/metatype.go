@@ -27,7 +27,7 @@ const (
 	metaSequencerSpecific uint8 = 0x7F
 )
 
-func handleMetaType(file *os.File, track Track) (bpm uint32, endOfTrack bool) {
+func handleMetaType(file *os.File, track *Track) (bpm uint32, endOfTrack bool) {
 	var metaType, length uint8
 
 	binary.Read(file, binary.BigEndian, &metaType)
