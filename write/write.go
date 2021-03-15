@@ -8,7 +8,11 @@ import (
 
 func AllTracks(tracks []convert.SmwTrack, bpm uint32) {
 	for i, track := range tracks {
-		fmt.Printf("---- Printing track %d\n\n", i)
+		fmt.Printf("---- Printing track %d", i)
+		if track.Name != "" {
+			fmt.Printf(" (%s)", track.Name)
+		}
+		fmt.Printf("\n\n")
 		Track(track)
 		fmt.Println()
 	}

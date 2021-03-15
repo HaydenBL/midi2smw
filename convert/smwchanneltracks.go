@@ -10,6 +10,7 @@ type SmwNote struct {
 	Octave       int
 }
 type SmwTrack struct {
+	Name          string
 	ChannelTracks [][]SmwNote // if a midi track has chords/overlapping notes, we'll throw them into multiple channels
 }
 
@@ -33,7 +34,7 @@ func createSmwChannelTracksForAllTracks(noteTracks []noteTrack, ticksPer64thNote
 	longestTrackLength := getLongestTrackLength(noteTracks)
 	noteLengthConverter := getNoteLengthConverter(ticksPer64thNote)
 	for _, noteTrack := range noteTracks {
-		smwTrack := createSmwChannelTrack(noteTrack.Notes, longestTrackLength, noteLengthConverter)
+		smwTrack := createSmwChannelTrack(noteTrack.Notes, noteTrack.Name, longestTrackLength, noteLengthConverter)
 		smwTracks = append(smwTracks, smwTrack)
 	}
 	return smwTracks
@@ -54,8 +55,9 @@ func getTrackLength(track noteTrack) uint32 {
 	return lastNote.StartTime + lastNote.Duration
 }
 
-func createSmwChannelTrack(notes []midiNote, length uint32, noteLengthConverter func(uint32) []uint8) SmwTrack {
+func createSmwChannelTrack(notes []midiNote, name string, length uint32, noteLengthConverter func(uint32) []uint8) SmwTrack {
 	var smwTrack SmwTrack
+	smwTrack.Name = name
 	// scan through track and create SMW channels until until no more notes
 	for len(notes) > 0 {
 		var smwChannel []SmwNote

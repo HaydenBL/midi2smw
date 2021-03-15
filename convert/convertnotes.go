@@ -13,6 +13,7 @@ type midiNote struct {
 }
 
 type noteTrack struct {
+	Name    string
 	Notes   []midiNote
 	MaxNote uint8
 	MinNote uint8
@@ -34,6 +35,7 @@ func convertNotes(tracks []midi.Track) []noteTrack {
 				i, note := findNoteIndex(notesBeingProcessed, event.Key)
 				if i != -1 {
 					note.Duration = wallTime - note.StartTime
+					noteTracks[trackIndex].Name = track.Name
 					noteTracks[trackIndex].Notes = append(noteTracks[trackIndex].Notes, note)
 					noteTracks[trackIndex].MinNote = minUint8(noteTracks[trackIndex].MinNote, note.Key)
 					noteTracks[trackIndex].MaxNote = max(noteTracks[trackIndex].MaxNote, note.Key)

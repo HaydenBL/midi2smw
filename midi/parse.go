@@ -59,7 +59,7 @@ func parseHeader(file *os.File) (numTrackChunks uint16, ticksPer64thNote uint32,
 func parseTrack(file *os.File) (Track, error) {
 	fmt.Println("----- TRACK FOUND")
 
-	var track = &Track{}
+	var track = &Track{Name: "Unnamed Track"}
 	var sc = &scanContext{}
 	var MTrk uint32 = 0
 	var endOfTrack = false
