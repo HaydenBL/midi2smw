@@ -51,7 +51,7 @@ func TestCreateSmwChannelTrack_singleTrack(t *testing.T) {
 		},
 	}
 
-	smwNotes := createSmwChannelTrack(notes, 210, noteLengthConverter)
+	smwNotes := createSmwChannelTrack(notes, "", 210, noteLengthConverter)
 	if len(smwNotes.ChannelTracks) != 1 {
 		t.Fatalf("Expected 1 track, got %d", len(smwNotes.ChannelTracks))
 	}
@@ -87,7 +87,7 @@ func TestCreateSmwChannelTrack_padsEndingProperly(t *testing.T) {
 		},
 	}
 
-	smwNotes := createSmwChannelTrack(notes, 60, noteLengthConverter)
+	smwNotes := createSmwChannelTrack(notes, "", 60, noteLengthConverter)
 	if len(smwNotes.ChannelTracks) != 1 {
 		t.Fatalf("Expected 1 track, got %d", len(smwNotes.ChannelTracks))
 	}
@@ -151,7 +151,7 @@ func TestCreateSmwChannelTrack_multiTrack(t *testing.T) {
 		},
 	}
 
-	smwNotes := createSmwChannelTrack(notes, 120, noteLengthConverter)
+	smwNotes := createSmwChannelTrack(notes, "", 120, noteLengthConverter)
 	if len(smwNotes.ChannelTracks) != 2 {
 		t.Fatalf("Expected 2 tracks, got %d", len(smwNotes.ChannelTracks))
 	}
