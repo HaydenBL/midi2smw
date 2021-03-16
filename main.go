@@ -8,10 +8,12 @@ import (
 )
 
 func main() {
-	beginParsing()
+	//begin()
+	bah, _ := specifyDrumTracks()
+	fmt.Println(bah[0].trackNumber)
 }
 
-func beginParsing() {
+func begin() {
 	filename := "dean_town.mid"
 
 	fmt.Printf("========== BEGIN PARSING ==========\n\n")
