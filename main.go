@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"midi2smw/convert"
+	"midi2smw/drumtrack"
 	"midi2smw/midi"
 	"midi2smw/write"
 )
@@ -10,11 +11,11 @@ import (
 func main() {
 	//begin()
 	var err error
-	var bah []DrumTrackGroup
-	if bah, err = specifyDrumTracks(); err != nil {
+	var bah []drumtrack.Group
+	if bah, err = drumtrack.SpecifyDrumTracks(); err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(bah[0].trackNumber)
+	fmt.Println(bah[0].TrackNumber)
 }
 
 func begin() {
