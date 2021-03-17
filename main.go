@@ -9,7 +9,11 @@ import (
 
 func main() {
 	//begin()
-	bah, _ := specifyDrumTracks()
+	var err error
+	var bah []DrumTrackGroup
+	if bah, err = specifyDrumTracks(); err != nil {
+		fmt.Println(err)
+	}
 	fmt.Println(bah[0].trackNumber)
 }
 
