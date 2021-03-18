@@ -28,7 +28,7 @@ func parseFlags() (fileName string, drumTracksFlag bool) {
 func begin(fileName string, drumTracksFlag bool) {
 	var drumTrackGroups []drumtrack.Group
 	if drumTracksFlag {
-		drumTrackGroups = getDrumTracksGroups()
+		drumTrackGroups = getDrumTrackGroups()
 	}
 
 	fmt.Printf("========== BEGIN PARSING ==========\n\n")
@@ -50,11 +50,12 @@ func begin(fileName string, drumTracksFlag bool) {
 	fmt.Printf("\n\n\n========== COMPLETE ==========\n")
 }
 
-func getDrumTracksGroups() []drumtrack.Group {
+func getDrumTrackGroups() []drumtrack.Group {
 	var err error
 	var drumTrackGroups []drumtrack.Group
 	if drumTrackGroups, err = drumtrack.SpecifyDrumTrackGroups(); err != nil {
 		fmt.Println(err)
+		os.Exit(2)
 	}
 	return drumTrackGroups
 }
