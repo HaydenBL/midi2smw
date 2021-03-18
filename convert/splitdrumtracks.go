@@ -46,7 +46,7 @@ func insertTracksAt(tracks []noteTrack, tracksToInsert []noteTrack, index int) [
 
 func setSplitTrackNames(oldName string, tracks []noteTrack) []noteTrack {
 	for i := range tracks {
-		tracks[i].Name = fmt.Sprintf("%s (Split %d)", oldName, i+1)
+		tracks[i].Name = fmt.Sprintf("%s - Split %d", oldName, i+1)
 	}
 	return tracks
 }

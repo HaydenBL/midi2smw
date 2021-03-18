@@ -86,7 +86,7 @@ func Test_splitDrumTracks(t *testing.T) {
 
 	expectedTracks := []noteTrack{
 		{
-			Name: "Bass Drum (Split 1)",
+			Name: "Bass Drum - Split 1",
 			Notes: []midiNote{
 				{Key: 0},
 				{Key: 3},
@@ -94,21 +94,21 @@ func Test_splitDrumTracks(t *testing.T) {
 			},
 		},
 		{
-			Name: "Bass Drum (Split 2)",
+			Name: "Bass Drum - Split 2",
 			Notes: []midiNote{
 				{Key: 1},
 				{Key: 1},
 			},
 		},
 		{
-			Name: "Bass Drum (Split 3)",
+			Name: "Bass Drum - Split 3",
 			Notes: []midiNote{
 				{Key: 4},
 				{Key: 5},
 			},
 		},
 		{
-			Name: "Snare (Split 1)",
+			Name: "Snare - Split 1",
 			Notes: []midiNote{
 				{Key: 0},
 				{Key: 3},
@@ -116,7 +116,7 @@ func Test_splitDrumTracks(t *testing.T) {
 			},
 		},
 		{
-			Name: "Snare (Split 2)",
+			Name: "Snare - Split 2",
 			Notes: []midiNote{
 				{Key: 1},
 				{Key: 4},
@@ -138,27 +138,27 @@ func Test_splitDrumTracks(t *testing.T) {
 			},
 		},
 		{
-			Name: "High Hat (Split 1)",
+			Name: "High Hat - Split 1",
 			Notes: []midiNote{
 				{Key: 3},
 				{Key: 3},
 			},
 		},
 		{
-			Name: "High Hat (Split 2)",
+			Name: "High Hat - Split 2",
 			Notes: []midiNote{
 				{Key: 1},
 				{Key: 1},
 			},
 		},
 		{
-			Name: "High Hat (Split 3)",
+			Name: "High Hat - Split 3",
 			Notes: []midiNote{
 				{Key: 0},
 			},
 		},
 		{
-			Name: "High Hat (Split 4)",
+			Name: "High Hat - Split 4",
 			Notes: []midiNote{
 				{Key: 4},
 				{Key: 5},
