@@ -23,7 +23,6 @@ locally if you want to tweak something yourself.
 * Output to a file
 * Optimize outputs (loops, dotted notes)
 * Import file and whatever else from command line argument (currently hardcoding path)
-* Specify drum tracks so you can export notes to different channels
 * Probably should do better error handling
 
 ### Special Thanks

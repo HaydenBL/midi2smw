@@ -2,6 +2,7 @@ package convert
 
 import (
 	"fmt"
+	"midi2smw/drumtrack"
 	"midi2smw/midi"
 )
 
@@ -19,7 +20,7 @@ type noteTrack struct {
 	MinNote uint8
 }
 
-func convertNotes(tracks []midi.Track) []noteTrack {
+func convertNotes(tracks []midi.Track, drumTrackGroups []drumtrack.Group) []noteTrack {
 	var noteTracks = make([]noteTrack, len(tracks))
 
 	for trackIndex, track := range tracks {
@@ -38,7 +39,7 @@ func convertNotes(tracks []midi.Track) []noteTrack {
 					noteTracks[trackIndex].Name = track.Name
 					noteTracks[trackIndex].Notes = append(noteTracks[trackIndex].Notes, note)
 					noteTracks[trackIndex].MinNote = minUint8(noteTracks[trackIndex].MinNote, note.Key)
-					noteTracks[trackIndex].MaxNote = max(noteTracks[trackIndex].MaxNote, note.Key)
+					noteTracks[trackIndex].MaxNote = maxUint8(noteTracks[trackIndex].MaxNote, note.Key)
 					notesBeingProcessed = deleteAtIndex(notesBeingProcessed, i)
 				}
 			}
@@ -46,6 +47,9 @@ func convertNotes(tracks []midi.Track) []noteTrack {
 	}
 
 	noteTracks = filterEmptyNoteTracks(noteTracks)
+	if len(drumTrackGroups) > 0 {
+		noteTracks = splitDrumTracks(noteTracks, drumTrackGroups)
+	}
 
 	return noteTracks
 }
@@ -62,34 +66,4 @@ func filterEmptyNoteTracks(tracks []noteTrack) []noteTrack {
 		fmt.Printf("Removed %d tracks with no note data\n", len(tracks)-len(nonEmptyTracks))
 	}
 	return nonEmptyTracks
-}
-
-func findNoteIndex(notes []midiNote, key uint8) (int, midiNote) {
-	for i, note := range notes {
-		if note.Key == key {
-			return i, note
-		}
-	}
-	return -1, midiNote{}
-}
-
-func deleteAtIndex(notes []midiNote, i int) []midiNote {
-	copy(notes[i:], notes[i+1:])
-	notes[len(notes)-1] = midiNote{}
-	notes = notes[:len(notes)-1]
-	return notes
-}
-
-func minUint8(a, b uint8) uint8 {
-	if a < b {
-		return a
-	}
-	return b
-}
-
-func max(a, b uint8) uint8 {
-	if a > b {
-		return a
-	}
-	return b
 }

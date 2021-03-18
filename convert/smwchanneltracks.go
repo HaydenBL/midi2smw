@@ -51,6 +51,9 @@ func getLongestTrackLength(noteTracks []noteTrack) (longestTrackLength uint32) {
 }
 
 func getTrackLength(track noteTrack) uint32 {
+	if len(track.Notes) < 1 {
+		return 0
+	}
 	lastNote := track.Notes[len(track.Notes)-1]
 	return lastNote.StartTime + lastNote.Duration
 }
