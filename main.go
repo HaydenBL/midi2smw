@@ -9,17 +9,13 @@ import (
 )
 
 func main() {
-	//begin()
-	var err error
-	var bah []drumtrack.Group
-	if bah, err = drumtrack.SpecifyDrumTracks(); err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(bah[0].TrackNumber)
+	begin()
 }
 
 func begin() {
 	filename := "dean_town.mid"
+
+	drumTrackGroups := getDrumTracksGroups()
 
 	fmt.Printf("========== BEGIN PARSING ==========\n\n")
 
@@ -31,11 +27,20 @@ func begin() {
 
 	fmt.Printf("\n\n\n========== BEGIN CONVERTING ==========\n\n")
 
-	tracks := convert.Convert(midiFile)
+	tracks := convert.Convert(midiFile, drumTrackGroups)
 
 	fmt.Printf("\n\n\n========== BEGIN WRITING ==========\n\n")
 
 	write.AllTracks(tracks, midiFile.Bpm)
 
 	fmt.Printf("\n\n\n========== COMPLETE ==========\n")
+}
+
+func getDrumTracksGroups() []drumtrack.Group {
+	var err error
+	var bah []drumtrack.Group
+	if bah, err = drumtrack.SpecifyDrumTrackGroups(); err != nil {
+		fmt.Println(err)
+	}
+	return bah
 }

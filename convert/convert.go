@@ -2,16 +2,17 @@ package convert
 
 import (
 	"fmt"
+	"midi2smw/drumtrack"
 	"midi2smw/midi"
 )
 
-func Convert(midiFile midi.MidiFile) []SmwTrack {
+func Convert(midiFile midi.MidiFile, drumTrackGroups []drumtrack.Group) []SmwTrack {
 	fmt.Println("Converting midi tracks...")
 
 	filteredTracks := filterOtherEventTypes(midiFile.MidiTracks)
 	filteredTracks = filterEmptyTracks(filteredTracks)
 
-	noteTracks := convertNotes(filteredTracks)
+	noteTracks := convertNotes(filteredTracks, drumTrackGroups)
 	noteTracks = quantizeNotesOnAllTracks(noteTracks, midiFile.TicksPer64thNote)
 
 	tracks := createSmwChannelTracksForAllTracks(noteTracks, midiFile.TicksPer64thNote)

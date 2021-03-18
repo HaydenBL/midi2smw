@@ -11,7 +11,7 @@ type Group struct {
 	NoteGroups  [][]uint8
 }
 
-func SpecifyDrumTracks() ([]Group, error) {
+func SpecifyDrumTrackGroups() ([]Group, error) {
 	scanner := bufio.NewScanner(os.Stdin)
 	var drumTrackGroups = make([]Group, 0)
 	var err error
