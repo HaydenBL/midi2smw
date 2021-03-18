@@ -9,8 +9,8 @@ import (
 func splitDrumTracks(tracks []noteTrack, drumTrackGroups []drumtrack.Group) []noteTrack {
 	// maps a track number to a list of newly split note tracks
 	noteSplitMap := make(map[uint8][]noteTrack)
-	for i, dtg := range drumTrackGroups {
-		trackToSplit := tracks[i]
+	for _, dtg := range drumTrackGroups {
+		trackToSplit := tracks[dtg.TrackNumber]
 		noteSplitMap[dtg.TrackNumber] = make([]noteTrack, len(dtg.NoteGroups)+1)
 		for _, note := range trackToSplit.Notes {
 			index := getIndexForDrumTrackGroup(note, dtg)
