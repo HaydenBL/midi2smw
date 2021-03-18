@@ -1,27 +1,41 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"midi2smw/convert"
 	"midi2smw/drumtrack"
 	"midi2smw/midi"
 	"midi2smw/write"
+	"os"
 )
 
 func main() {
-	begin()
+	fileName, drumTracksFlag := parseFlags()
+	begin(fileName, drumTracksFlag)
 }
 
-func begin() {
-	filename := "dean_town.mid"
+func parseFlags() (fileName string, drumTracksFlag bool) {
+	drumTracksFlagPtr := flag.Bool("drumtracks", false, "Specify drum tracks and note groupings")
+	flag.Parse()
+	if len(flag.Args()) < 1 {
+		fmt.Println("Error: no file name provided")
+		os.Exit(1)
+	}
+	return flag.Args()[0], *drumTracksFlagPtr
+}
 
-	drumTrackGroups := getDrumTracksGroups()
+func begin(fileName string, drumTracksFlag bool) {
+	var drumTrackGroups []drumtrack.Group
+	if drumTracksFlag {
+		drumTrackGroups = getDrumTracksGroups()
+	}
 
 	fmt.Printf("========== BEGIN PARSING ==========\n\n")
 
-	midiFile, err := midi.Parse(filename)
+	midiFile, err := midi.Parse(fileName)
 	if err != nil {
-		fmt.Printf("Error parsing midi file: %s\n", filename)
+		fmt.Printf("Error parsing midi file: %s\n", fileName)
 		return
 	}
 
@@ -38,9 +52,9 @@ func begin() {
 
 func getDrumTracksGroups() []drumtrack.Group {
 	var err error
-	var bah []drumtrack.Group
-	if bah, err = drumtrack.SpecifyDrumTrackGroups(); err != nil {
+	var drumTrackGroups []drumtrack.Group
+	if drumTrackGroups, err = drumtrack.SpecifyDrumTrackGroups(); err != nil {
 		fmt.Println(err)
 	}
-	return bah
+	return drumTrackGroups
 }
