@@ -2,8 +2,11 @@ package drumtrack
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
+	"strconv"
+	"strings"
 )
 
 type Group struct {
@@ -13,19 +16,19 @@ type Group struct {
 
 type NoteGroup struct {
 	Notes  []uint8
-	Sample uint8
+	Sample int16
 }
 
 func SpecifyDrumTrackGroups() ([]Group, error) {
-	scanner := bufio.NewScanner(os.Stdin)
+	sc := bufio.NewScanner(os.Stdin)
 	var drumTrackGroups = make([]Group, 0)
 	var err error
 
 	var drumTracks []uint8
 	for true {
 		fmt.Printf("Input drum tracks, space-separated (leave blank if none): ")
-		scanner.Scan()
-		line := scanner.Text()
+		sc.Scan()
+		line := sc.Text()
 		if line == "" {
 			return drumTrackGroups, nil
 		}
@@ -39,7 +42,7 @@ func SpecifyDrumTrackGroups() ([]Group, error) {
 
 	for _, trackNum := range drumTracks {
 		var newDtg Group
-		if newDtg, err = readDrumTrackGroup(scanner, trackNum); err != nil {
+		if newDtg, err = readDrumTrackGroup(sc, trackNum); err != nil {
 			return drumTrackGroups, err
 		}
 		if newDtg.NoteGroups != nil {
@@ -50,7 +53,7 @@ func SpecifyDrumTrackGroups() ([]Group, error) {
 	return drumTrackGroups, nil
 }
 
-func readDrumTrackGroup(scanner *bufio.Scanner, trackNum uint8) (Group, error) {
+func readDrumTrackGroup(sc *bufio.Scanner, trackNum uint8) (Group, error) {
 	var dtg = Group{TrackNumber: trackNum}
 
 	for true {
@@ -58,10 +61,10 @@ func readDrumTrackGroup(scanner *bufio.Scanner, trackNum uint8) (Group, error) {
 		var err error
 
 		fmt.Printf("\tInput note group for track %d, space separated (q to finish): ", trackNum)
-		scanner.Scan()
-		line := scanner.Text()
+		sc.Scan()
+		line := sc.Text()
 
-		if line == "q" || line == "Q" {
+		if strings.ToLower(line) == "q" {
 			break
 		}
 
@@ -76,5 +79,60 @@ func readDrumTrackGroup(scanner *bufio.Scanner, trackNum uint8) (Group, error) {
 		}
 	}
 
+	for i, ng := range dtg.NoteGroups {
+		if promptToSetSamples(sc, ng.Notes) {
+			var err error
+			if dtg.NoteGroups[i], err = setSample(sc, ng); err != nil {
+				return Group{}, err
+			}
+		} else {
+			dtg.NoteGroups[i].Sample = -1
+		}
+	}
+
 	return dtg, nil
+}
+
+func promptToSetSamples(sc *bufio.Scanner, notes []uint8) bool {
+	for true {
+		fmt.Printf("\t\tSet samples for note group:")
+		for _, note := range notes {
+			fmt.Printf(" %d", note)
+		}
+		fmt.Printf("? (y/n): ")
+		sc.Scan()
+		line := sc.Text()
+		if strings.ToLower(line) == "y" {
+			return true
+		} else if strings.ToLower(line) == "n" {
+			return false
+		}
+	}
+	return false
+}
+
+func setSample(sc *bufio.Scanner, noteGroup NoteGroup) (NoteGroup, error) {
+	sample, err := setSampleForTrackGroup(sc, noteGroup.Notes)
+	if err != nil {
+		return NoteGroup{}, err
+	}
+	noteGroup.Sample = int16(sample)
+	return noteGroup, nil
+}
+
+func setSampleForTrackGroup(sc *bufio.Scanner, notes []uint8) (uint8, error) {
+	for true {
+		fmt.Printf("\t\tEnter sample number for note group:")
+		for _, note := range notes {
+			fmt.Printf(" %d", note)
+		}
+		fmt.Printf(": ")
+		sc.Scan()
+		line := sc.Text()
+
+		if sample, err := strconv.ParseUint(line, 10, 8); err == nil {
+			return uint8(sample), nil
+		}
+	}
+	return 0, errors.New("error getting sample track for group")
 }
