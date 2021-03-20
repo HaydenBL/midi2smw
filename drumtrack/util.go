@@ -25,11 +25,11 @@ func readLineOfInts(str string) ([]uint8, error) {
 	return nums, nil
 }
 
-func numberAlreadyInAGroup(existingGroups [][]uint8, newGroup []uint8) bool {
+func numberAlreadyInAGroup(existingGroups []NoteGroup, newGroup []uint8) bool {
 	allNums := make([]uint8, 0)
 	for i := range existingGroups {
-		for j := range existingGroups[i] {
-			allNums = append(allNums, existingGroups[i][j])
+		for j := range existingGroups[i].Notes {
+			allNums = append(allNums, existingGroups[i].Notes[j])
 		}
 	}
 	for _, num := range newGroup {

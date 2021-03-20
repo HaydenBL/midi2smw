@@ -8,7 +8,12 @@ import (
 
 type Group struct {
 	TrackNumber uint8
-	NoteGroups  [][]uint8
+	NoteGroups  []NoteGroup
+}
+
+type NoteGroup struct {
+	Notes  []uint8
+	Sample uint8
 }
 
 func SpecifyDrumTrackGroups() ([]Group, error) {
@@ -67,7 +72,7 @@ func readDrumTrackGroup(scanner *bufio.Scanner, trackNum uint8) (Group, error) {
 		} else if containsDuplicates(notes) {
 			fmt.Printf("\t\tTrack group cannot have duplicates\n")
 		} else {
-			dtg.NoteGroups = append(dtg.NoteGroups, notes)
+			dtg.NoteGroups = append(dtg.NoteGroups, NoteGroup{Notes: notes})
 		}
 	}
 

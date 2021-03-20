@@ -4,7 +4,7 @@ import "midi2smw/drumtrack"
 
 func getIndexForDrumTrackGroup(note midiNote, dtg drumtrack.Group) int {
 	for i, noteGroup := range dtg.NoteGroups {
-		if contains(note.Key, noteGroup) {
+		if contains(note.Key, noteGroup.Notes) {
 			return i
 		}
 	}
