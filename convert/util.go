@@ -1,14 +1,14 @@
 package convert
 
-import "midi2smw/drumtrack"
+import "midi2smw/convert/drumtrack"
 
-func getIndexForDrumTrackGroup(note midiNote, dtg drumtrack.Group) int {
-	for i, noteGroup := range dtg.NoteGroups {
+func getIndexForDrumTrackGroup(note midiNote, noteGroups []drumtrack.NoteGroup) int {
+	for i, noteGroup := range noteGroups {
 		if contains(note.Key, noteGroup.Notes) {
 			return i
 		}
 	}
-	return len(dtg.NoteGroups)
+	return len(noteGroups)
 }
 
 func contains(num uint8, arr []uint8) bool {

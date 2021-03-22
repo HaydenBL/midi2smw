@@ -7,6 +7,19 @@ import (
 	"strings"
 )
 
+func readInt(str string) (uint8, error) {
+	var num64 uint64
+	var err error
+
+	if num64, err = strconv.ParseUint(str, 10, 8); err != nil {
+		return 0, errors.New("error parsing line")
+	}
+	if num64 > 255 {
+		return 0, errors.New("number too large (max 255)")
+	}
+	return uint8(num64), nil
+}
+
 func readLineOfInts(str string) ([]uint8, error) {
 	var num64 uint64
 	var err error

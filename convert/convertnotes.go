@@ -2,7 +2,7 @@ package convert
 
 import (
 	"fmt"
-	"midi2smw/drumtrack"
+	"midi2smw/convert/drumtrack"
 	"midi2smw/midi"
 )
 
@@ -20,7 +20,7 @@ type noteTrack struct {
 	MinNote uint8
 }
 
-func convertNotes(tracks []midi.Track, drumTrackGroups []drumtrack.Group) []noteTrack {
+func convertNotes(tracks []drumtrack.MidiTrackWithNoteGroups) []noteTrack {
 	var noteTracks = make([]noteTrack, len(tracks))
 
 	for trackIndex, track := range tracks {
@@ -47,9 +47,7 @@ func convertNotes(tracks []midi.Track, drumTrackGroups []drumtrack.Group) []note
 	}
 
 	noteTracks = filterEmptyNoteTracks(noteTracks)
-	if len(drumTrackGroups) > 0 {
-		noteTracks = splitDrumTracks(noteTracks, drumTrackGroups)
-	}
+	noteTracks = splitAllTracks(noteTracks, tracks)
 
 	return noteTracks
 }

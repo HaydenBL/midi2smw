@@ -1,7 +1,7 @@
 package convert
 
 import (
-	"midi2smw/drumtrack"
+	"midi2smw/convert/drumtrack"
 	"reflect"
 	"testing"
 )
@@ -82,7 +82,7 @@ func Test_splitDrumTracks(t *testing.T) {
 		},
 	}
 
-	tracks = splitDrumTracks(tracks, drumTrackGroups)
+	tracks = splitAllTracks(tracks, drumTrackGroups)
 
 	expectedTracks := []noteTrack{
 		{

@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"midi2smw/convert"
-	"midi2smw/drumtrack"
 	"midi2smw/midi"
 	"midi2smw/write"
 	"os"
@@ -26,10 +25,6 @@ func parseFlags() (fileName string, drumTracksFlag bool) {
 }
 
 func begin(fileName string, drumTracksFlag bool) {
-	var drumTrackGroups []drumtrack.Group
-	if drumTracksFlag {
-		drumTrackGroups = getDrumTrackGroups()
-	}
 
 	fmt.Printf("========== BEGIN PARSING ==========\n\n")
 
@@ -41,21 +36,11 @@ func begin(fileName string, drumTracksFlag bool) {
 
 	fmt.Printf("\n\n\n========== BEGIN CONVERTING ==========\n\n")
 
-	tracks := convert.Convert(midiFile, drumTrackGroups)
+	tracks := convert.Convert(midiFile, drumTracksFlag)
 
 	fmt.Printf("\n\n\n========== BEGIN WRITING ==========\n\n")
 
 	write.AllTracks(tracks, midiFile.Bpm)
 
 	fmt.Printf("\n\n\n========== COMPLETE ==========\n")
-}
-
-func getDrumTrackGroups() []drumtrack.Group {
-	var err error
-	var drumTrackGroups []drumtrack.Group
-	if drumTrackGroups, err = drumtrack.SpecifyDrumTrackGroups(); err != nil {
-		fmt.Println(err)
-		os.Exit(2)
-	}
-	return drumTrackGroups
 }
