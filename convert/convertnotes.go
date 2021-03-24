@@ -13,11 +13,12 @@ type MidiNote struct {
 }
 
 type NoteTrack struct {
-	Name      string
-	Notes     []MidiNote
-	MaxNote   uint8
-	MinNote   uint8
-	SampleMap map[uint8]uint8
+	Name          string
+	Notes         []MidiNote
+	MaxNote       uint8
+	MinNote       uint8
+	DefaultSample uint8
+	SampleMap     map[uint8]uint8
 }
 
 func convertNotes(tracks []MidiTrackWithNoteGroups) []NoteTrack {

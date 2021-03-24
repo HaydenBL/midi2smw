@@ -6,13 +6,15 @@ import (
 
 type SmwNote struct {
 	Key          string
+	KeyValue     uint8
 	LengthValues []uint8
 	Octave       int
 }
 
 type ChannelTrack struct {
-	Notes     []SmwNote
-	SampleMap map[uint8]uint8
+	Notes         []SmwNote
+	DefaultSample uint8
+	SampleMap     map[uint8]uint8
 }
 
 type SmwTrack struct {
@@ -96,7 +98,7 @@ func createSmwChannelTrack(noteTrack NoteTrack, length uint32, noteLengthConvert
 			}
 			key, octave := noteValueToSmwKey(*activeNote)
 			lengths := noteLengthConverter(activeNote.Duration)
-			smwNote := SmwNote{key, lengths, octave}
+			smwNote := SmwNote{key, activeNote.Key, lengths, octave}
 			smwNoteChannel = append(smwNoteChannel, smwNote)
 			lastNoteEndTime = activeNote.StartTime + activeNote.Duration
 		}
@@ -108,7 +110,11 @@ func createSmwChannelTrack(noteTrack NoteTrack, length uint32, noteLengthConvert
 			smwNoteChannel = append(smwNoteChannel, restSmwNote)
 		}
 
-		newTrack := ChannelTrack{Notes: smwNoteChannel, SampleMap: noteTrack.SampleMap}
+		newTrack := ChannelTrack{
+			Notes:         smwNoteChannel,
+			DefaultSample: noteTrack.DefaultSample,
+			SampleMap:     noteTrack.SampleMap,
+		}
 		smwTrack.ChannelTracks = append(smwTrack.ChannelTracks, newTrack)
 	}
 	return smwTrack

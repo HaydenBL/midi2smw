@@ -23,6 +23,7 @@ func Convert(midiFile midi.MidiFile, drumTracksFlag, samplesFlag bool) []SmwTrac
 	noteTracks := convertNotes(midiTracksWithNoteGroups)
 	noteTracks = quantizeNotesOnAllTracks(noteTracks, midiFile.TicksPer64thNote)
 
+	noteTracks = GetDefaultSamples(noteTracks)
 	if samplesFlag {
 		noteTracks = SpecifySamples(noteTracks)
 	}

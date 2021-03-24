@@ -36,7 +36,9 @@ func Track(track convert.SmwTrack) {
 func Channel(channel convert.ChannelTrack) {
 	notes := channel.Notes
 	lastOctave := notes[0].Octave
+	lastSample := channel.DefaultSample
 	fmt.Printf("Start octave: %d\n", lastOctave)
+	fmt.Printf("Sample: %d\n", channel.DefaultSample)
 
 	for _, smwNote := range notes {
 		if smwNote.Key == "r" {
@@ -59,6 +61,16 @@ func Channel(channel convert.ChannelTrack) {
 			}
 			for i, note := range smwNote.LengthValues {
 				if i == 0 {
+					// Check if we need to swap the sample
+					sample, ok := channel.SampleMap[smwNote.KeyValue]
+					if !ok {
+						sample = channel.DefaultSample
+					}
+					if sample != lastSample {
+						lastSample = sample
+						fmt.Printf("@%d", sample)
+					}
+
 					fmt.Printf("%s%d", smwNote.Key, note)
 				} else {
 					fmt.Printf("^%d", note)

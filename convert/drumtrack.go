@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"midi2smw/midi"
-	"midi2smw/utils"
 	"os"
 	"strings"
 )
@@ -56,7 +55,7 @@ func promptToSplitTracks(sc *bufio.Scanner, midiTracks []midi.Track) int {
 			return -1
 		}
 
-		if index, err := utils.ReadInt(line); err != nil {
+		if index, err := readInt(line); err != nil {
 			fmt.Println(err)
 		} else if int(index) > len(midiTracks)-1 {
 			fmt.Println("Index out of range")
@@ -82,11 +81,11 @@ func readDrumTrackGroups(sc *bufio.Scanner) []NoteGroup {
 			break
 		}
 
-		if notes, err = utils.ReadLineOfUInt8s(line); err != nil {
+		if notes, err = readLineOfUInt8s(line); err != nil {
 			fmt.Printf("\t\t%s\n", err)
 		} else if numberAlreadyInAGroup(noteGroups, notes) {
 			fmt.Printf("\t\tOne or more specified numbers already exists in a group for track\n")
-		} else if utils.ContainsDuplicates(notes) {
+		} else if containsDuplicates(notes) {
 			fmt.Printf("\t\tTrack group cannot have duplicates\n")
 		} else {
 			noteGroups = append(noteGroups, NoteGroup{Notes: notes})
@@ -104,7 +103,7 @@ func numberAlreadyInAGroup(existingGroups []NoteGroup, newGroup []uint8) bool {
 		}
 	}
 	for _, num := range newGroup {
-		if utils.NumberExistsIn(num, allNums) {
+		if numberExistsIn(num, allNums) {
 			return true
 		}
 	}

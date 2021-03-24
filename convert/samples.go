@@ -3,20 +3,42 @@ package convert
 import (
 	"bufio"
 	"fmt"
-	"midi2smw/utils"
 	"os"
 	"strings"
 )
 
+func GetDefaultSamples(noteTracks []NoteTrack) []NoteTrack {
+	sc := bufio.NewScanner(os.Stdin)
+	for i, track := range noteTracks {
+		defaultSample := promptForDefaultSample(sc, i, track.Name)
+		noteTracks[i].DefaultSample = defaultSample
+	}
+	return noteTracks
+}
+
+func promptForDefaultSample(sc *bufio.Scanner, trackIndex int, trackName string) uint8 {
+	for true {
+		fmt.Printf("\t\tEnter sample for track %d (%s): ", trackIndex, trackName)
+		sc.Scan()
+		line := sc.Text()
+		sample, err := readInt(line)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		return sample
+	}
+	fmt.Println("Error getting default sample")
+	return 0
+}
+
 func SpecifySamples(noteTracks []NoteTrack) []NoteTrack {
 	sc := bufio.NewScanner(os.Stdin)
-
 	for true {
 		index := promptToSetSamples(sc, noteTracks)
 		if index == -1 {
 			break
 		}
-
 		sampleMap := getSampleMap(sc)
 		noteTracks[index].SampleMap = sampleMap
 	}
@@ -36,7 +58,7 @@ func promptToSetSamples(sc *bufio.Scanner, noteTracks []NoteTrack) int {
 			return -1
 		}
 
-		index, err := utils.ReadInt(line)
+		index, err := readInt(line)
 		if err != nil {
 			fmt.Println(err)
 			continue
@@ -55,7 +77,7 @@ func getSampleMap(sc *bufio.Scanner) map[uint8]uint8 {
 		if strings.ToLower(line) == "q" {
 			return m
 		}
-		notes, err := utils.ReadLineOfUInt8s(line)
+		notes, err := readLineOfUInt8s(line)
 		if err != nil {
 			fmt.Println(err)
 			continue
@@ -64,7 +86,7 @@ func getSampleMap(sc *bufio.Scanner) map[uint8]uint8 {
 		fmt.Printf("\t\tEnter sample number: ")
 		sc.Scan()
 		line = sc.Text()
-		sample, err := utils.ReadInt(line)
+		sample, err := readInt(line)
 		if err != nil {
 			fmt.Println(err)
 			continue
