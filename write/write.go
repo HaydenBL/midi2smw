@@ -33,10 +33,12 @@ func Track(track convert.SmwTrack) {
 	}
 }
 
-func Channel(channel []convert.SmwNote) {
-	lastOctave := channel[0].Octave
+func Channel(channel convert.ChannelTrack) {
+	notes := channel.Notes
+	lastOctave := notes[0].Octave
 	fmt.Printf("Start octave: %d\n", lastOctave)
-	for _, smwNote := range channel {
+
+	for _, smwNote := range notes {
 		if smwNote.Key == "r" {
 			for i, note := range smwNote.LengthValues {
 				if i == 0 {

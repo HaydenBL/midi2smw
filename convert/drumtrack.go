@@ -1,11 +1,11 @@
-package drumtrack
+package convert
 
 import (
 	"bufio"
 	"fmt"
 	"midi2smw/midi"
+	"midi2smw/utils"
 	"os"
-	"strconv"
 	"strings"
 )
 
@@ -15,8 +15,7 @@ type MidiTrackWithNoteGroups struct {
 }
 
 type NoteGroup struct {
-	Notes  []uint8
-	Sample int16
+	Notes []uint8
 }
 
 func SpecifyDrumTrackGroups(midiTracks []midi.Track) []MidiTrackWithNoteGroups {
@@ -28,15 +27,12 @@ func SpecifyDrumTrackGroups(midiTracks []midi.Track) []MidiTrackWithNoteGroups {
 	}
 
 	for true {
-		var index int
-
-		index = promptToSplitTracks(sc, midiTracks)
+		index := promptToSplitTracks(sc, midiTracks)
 		if index == -1 {
 			break
 		}
 
-		var noteGroups []NoteGroup
-		noteGroups = readDrumTrackGroups(sc)
+		noteGroups := readDrumTrackGroups(sc)
 		if len(noteGroups) > 0 {
 			tracksWithNoteGroups[index].NoteGroups = noteGroups
 		}
@@ -47,8 +43,6 @@ func SpecifyDrumTrackGroups(midiTracks []midi.Track) []MidiTrackWithNoteGroups {
 }
 
 func promptToSplitTracks(sc *bufio.Scanner, midiTracks []midi.Track) int {
-	var index uint8
-	var err error
 	for true {
 		fmt.Println("-- Specify index of track to split (q to quit)")
 		for i, track := range midiTracks {
@@ -62,7 +56,7 @@ func promptToSplitTracks(sc *bufio.Scanner, midiTracks []midi.Track) int {
 			return -1
 		}
 
-		if index, err = readInt(line); err != nil {
+		if index, err := utils.ReadInt(line); err != nil {
 			fmt.Println(err)
 		} else if int(index) > len(midiTracks)-1 {
 			fmt.Println("Index out of range")
@@ -88,64 +82,31 @@ func readDrumTrackGroups(sc *bufio.Scanner) []NoteGroup {
 			break
 		}
 
-		if notes, err = readLineOfInts(line); err != nil {
+		if notes, err = utils.ReadLineOfUInt8s(line); err != nil {
 			fmt.Printf("\t\t%s\n", err)
 		} else if numberAlreadyInAGroup(noteGroups, notes) {
 			fmt.Printf("\t\tOne or more specified numbers already exists in a group for track\n")
-		} else if containsDuplicates(notes) {
+		} else if utils.ContainsDuplicates(notes) {
 			fmt.Printf("\t\tTrack group cannot have duplicates\n")
 		} else {
-			noteGroups = append(noteGroups, NoteGroup{Notes: notes, Sample: -1})
-		}
-	}
-
-	for i, ng := range noteGroups {
-		if promptToSetSamples(sc, ng.Notes) {
-			noteGroups[i] = setSample(sc, ng)
+			noteGroups = append(noteGroups, NoteGroup{Notes: notes})
 		}
 	}
 
 	return noteGroups
 }
 
-func promptToSetSamples(sc *bufio.Scanner, notes []uint8) bool {
-	for true {
-		fmt.Printf("\t\tSet samples for note group:")
-		for _, note := range notes {
-			fmt.Printf(" %d", note)
+func numberAlreadyInAGroup(existingGroups []NoteGroup, newGroup []uint8) bool {
+	allNums := make([]uint8, 0)
+	for i := range existingGroups {
+		for j := range existingGroups[i].Notes {
+			allNums = append(allNums, existingGroups[i].Notes[j])
 		}
-		fmt.Printf("? (y/n): ")
-		sc.Scan()
-		line := sc.Text()
-		if strings.ToLower(line) == "y" {
+	}
+	for _, num := range newGroup {
+		if utils.NumberExistsIn(num, allNums) {
 			return true
-		} else if strings.ToLower(line) == "n" {
-			return false
 		}
 	}
 	return false
-}
-
-func setSample(sc *bufio.Scanner, noteGroup NoteGroup) NoteGroup {
-	sample := getSampleForNoteGroup(sc, noteGroup.Notes)
-	noteGroup.Sample = int16(sample)
-	return noteGroup
-}
-
-func getSampleForNoteGroup(sc *bufio.Scanner, notes []uint8) uint8 {
-	for true {
-		fmt.Printf("\t\tEnter sample number for note group:")
-		for _, note := range notes {
-			fmt.Printf(" %d", note)
-		}
-		fmt.Printf(": ")
-		sc.Scan()
-		line := sc.Text()
-
-		if sample, err := strconv.ParseUint(line, 10, 8); err == nil {
-			return uint8(sample)
-		}
-	}
-	fmt.Println("Error getting sample for note group")
-	return 0
 }

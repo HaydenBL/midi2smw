@@ -1,4 +1,4 @@
-package drumtrack
+package utils
 
 import (
 	"errors"
@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func readInt(str string) (uint8, error) {
+func ReadInt(str string) (uint8, error) {
 	var num64 uint64
 	var err error
 
@@ -20,7 +20,7 @@ func readInt(str string) (uint8, error) {
 	return uint8(num64), nil
 }
 
-func readLineOfInts(str string) ([]uint8, error) {
+func ReadLineOfUInt8s(str string) ([]uint8, error) {
 	var num64 uint64
 	var err error
 
@@ -38,22 +38,7 @@ func readLineOfInts(str string) ([]uint8, error) {
 	return nums, nil
 }
 
-func numberAlreadyInAGroup(existingGroups []NoteGroup, newGroup []uint8) bool {
-	allNums := make([]uint8, 0)
-	for i := range existingGroups {
-		for j := range existingGroups[i].Notes {
-			allNums = append(allNums, existingGroups[i].Notes[j])
-		}
-	}
-	for _, num := range newGroup {
-		if numberExistsIn(num, allNums) {
-			return true
-		}
-	}
-	return false
-}
-
-func numberExistsIn(num uint8, arr []uint8) bool {
+func NumberExistsIn(num uint8, arr []uint8) bool {
 	for _, n := range arr {
 		if n == num {
 			return true
@@ -62,7 +47,7 @@ func numberExistsIn(num uint8, arr []uint8) bool {
 	return false
 }
 
-func containsDuplicates(arr []uint8) bool {
+func ContainsDuplicates(arr []uint8) bool {
 	seen := make(map[uint8]bool, len(arr))
 	for _, v := range arr {
 		if _, ok := seen[v]; ok {

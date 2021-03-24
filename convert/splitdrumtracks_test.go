@@ -7,10 +7,10 @@ import (
 )
 
 func Test_splitDrumTracks(t *testing.T) {
-	tracks := []noteTrack{
+	tracks := []NoteTrack{
 		{
 			Name: "Bass Drum",
-			Notes: []midiNote{
+			Notes: []MidiNote{
 				{Key: 0},
 				{Key: 1},
 				{Key: 4},
@@ -22,7 +22,7 @@ func Test_splitDrumTracks(t *testing.T) {
 		},
 		{
 			Name: "Snare",
-			Notes: []midiNote{
+			Notes: []MidiNote{
 				{Key: 0},
 				{Key: 1},
 				{Key: 4},
@@ -34,7 +34,7 @@ func Test_splitDrumTracks(t *testing.T) {
 		},
 		{
 			Name: "Piano",
-			Notes: []midiNote{
+			Notes: []MidiNote{
 				{Key: 0},
 				{Key: 1},
 				{Key: 4},
@@ -46,7 +46,7 @@ func Test_splitDrumTracks(t *testing.T) {
 		},
 		{
 			Name: "High Hat",
-			Notes: []midiNote{
+			Notes: []MidiNote{
 				{Key: 0},
 				{Key: 1},
 				{Key: 4},
@@ -84,10 +84,10 @@ func Test_splitDrumTracks(t *testing.T) {
 
 	tracks = splitAllTracks(tracks, drumTrackGroups)
 
-	expectedTracks := []noteTrack{
+	expectedTracks := []NoteTrack{
 		{
 			Name: "Bass Drum - Split 1",
-			Notes: []midiNote{
+			Notes: []MidiNote{
 				{Key: 0},
 				{Key: 3},
 				{Key: 3},
@@ -95,21 +95,21 @@ func Test_splitDrumTracks(t *testing.T) {
 		},
 		{
 			Name: "Bass Drum - Split 2",
-			Notes: []midiNote{
+			Notes: []MidiNote{
 				{Key: 1},
 				{Key: 1},
 			},
 		},
 		{
 			Name: "Bass Drum - Split 3",
-			Notes: []midiNote{
+			Notes: []MidiNote{
 				{Key: 4},
 				{Key: 5},
 			},
 		},
 		{
 			Name: "Snare - Split 1",
-			Notes: []midiNote{
+			Notes: []MidiNote{
 				{Key: 0},
 				{Key: 3},
 				{Key: 3},
@@ -117,7 +117,7 @@ func Test_splitDrumTracks(t *testing.T) {
 		},
 		{
 			Name: "Snare - Split 2",
-			Notes: []midiNote{
+			Notes: []MidiNote{
 				{Key: 1},
 				{Key: 4},
 				{Key: 1},
@@ -127,7 +127,7 @@ func Test_splitDrumTracks(t *testing.T) {
 
 		{
 			Name: "Piano",
-			Notes: []midiNote{
+			Notes: []MidiNote{
 				{Key: 0},
 				{Key: 1},
 				{Key: 4},
@@ -139,27 +139,27 @@ func Test_splitDrumTracks(t *testing.T) {
 		},
 		{
 			Name: "High Hat - Split 1",
-			Notes: []midiNote{
+			Notes: []MidiNote{
 				{Key: 3},
 				{Key: 3},
 			},
 		},
 		{
 			Name: "High Hat - Split 2",
-			Notes: []midiNote{
+			Notes: []MidiNote{
 				{Key: 1},
 				{Key: 1},
 			},
 		},
 		{
 			Name: "High Hat - Split 3",
-			Notes: []midiNote{
+			Notes: []MidiNote{
 				{Key: 0},
 			},
 		},
 		{
 			Name: "High Hat - Split 4",
-			Notes: []midiNote{
+			Notes: []MidiNote{
 				{Key: 4},
 				{Key: 5},
 			},

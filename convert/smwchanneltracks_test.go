@@ -6,11 +6,11 @@ import (
 )
 
 func TestCreateSmwChannelTrack_singleTrack(t *testing.T) {
-	var notes []midiNote
+	var notes []MidiNote
 	var ticksPer64thNote uint32 = 30
 	noteLengthConverter := getNoteLengthConverter(ticksPer64thNote)
 
-	notes = []midiNote{
+	notes = []MidiNote{
 		{
 			Key:       24,
 			StartTime: 0,
@@ -62,11 +62,11 @@ func TestCreateSmwChannelTrack_singleTrack(t *testing.T) {
 }
 
 func TestCreateSmwChannelTrack_padsEndingProperly(t *testing.T) {
-	var notes []midiNote
+	var notes []MidiNote
 	var ticksPer64thNote uint32 = 30
 	noteLengthConverter := getNoteLengthConverter(ticksPer64thNote)
 
-	notes = []midiNote{
+	notes = []MidiNote{
 		{
 			Key:       24,
 			StartTime: 0,
@@ -98,11 +98,11 @@ func TestCreateSmwChannelTrack_padsEndingProperly(t *testing.T) {
 }
 
 func TestCreateSmwChannelTrack_multiTrack(t *testing.T) {
-	var notes []midiNote
+	var notes []MidiNote
 	var ticksPer64thNote uint32 = 30
 	noteLengthConverter := getNoteLengthConverter(ticksPer64thNote)
 
-	notes = []midiNote{
+	notes = []MidiNote{
 		{
 			Key:       24,
 			StartTime: 0,
@@ -167,21 +167,21 @@ func TestNoteValueToSmwKey(t *testing.T) {
 	var k uint8
 	// too low for SMW note
 	for k = 0; k < 19; k++ {
-		key, octave := noteValueToSmwKey(midiNote{Key: k})
+		key, octave := noteValueToSmwKey(MidiNote{Key: k})
 		if key != "r" || octave != 0 {
 			t.Fatalf("Should error when key value too low")
 		}
 	}
 	// valid SMW note range
 	for k = 19; k < 89; k++ {
-		key, _ := noteValueToSmwKey(midiNote{Key: k})
+		key, _ := noteValueToSmwKey(MidiNote{Key: k})
 		if key == "r" {
 			t.Fatalf("Shouldn't error when key value is within range")
 		}
 	}
 	// too high for SMW note
 	for k = 89; k < 128; k++ {
-		key, octave := noteValueToSmwKey(midiNote{Key: k})
+		key, octave := noteValueToSmwKey(MidiNote{Key: k})
 		if key != "r" || octave != 0 {
 			t.Fatalf("Should error when key value too high")
 		}

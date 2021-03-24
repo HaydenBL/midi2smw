@@ -5,9 +5,9 @@ import "testing"
 func TestQuantizeNotes(t *testing.T) {
 	var ticksPer64thNote uint32 = 30
 	quantizer := getQuantizer(ticksPer64thNote)
-	var notes []midiNote
+	var notes []MidiNote
 
-	notes = []midiNote{
+	notes = []MidiNote{
 		{
 			StartTime: 0,
 			Duration:  14,

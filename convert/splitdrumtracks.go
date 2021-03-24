@@ -2,16 +2,15 @@ package convert
 
 import (
 	"fmt"
-	"midi2smw/convert/drumtrack"
 )
 
-func splitAllTracks(tracks []noteTrack, midiTracksWithNoteGroups []drumtrack.MidiTrackWithNoteGroups) []noteTrack {
+func splitAllTracks(tracks []NoteTrack, midiTracksWithNoteGroups []MidiTrackWithNoteGroups) []NoteTrack {
 	if len(tracks) != len(midiTracksWithNoteGroups) {
 		fmt.Printf("Error splitting drum tracks")
 		return tracks
 	}
 
-	newNoteTracks := make([]noteTrack, 0)
+	newNoteTracks := make([]NoteTrack, 0)
 	for i := range tracks {
 		splitTracks := splitIntoTracks(tracks[i], midiTracksWithNoteGroups[i].NoteGroups)
 		splitTracks = filterEmptyNoteTracks(splitTracks)
@@ -22,12 +21,12 @@ func splitAllTracks(tracks []noteTrack, midiTracksWithNoteGroups []drumtrack.Mid
 	return newNoteTracks
 }
 
-func splitIntoTracks(track noteTrack, noteGroups []drumtrack.NoteGroup) []noteTrack {
+func splitIntoTracks(track NoteTrack, noteGroups []NoteGroup) []NoteTrack {
 	if len(noteGroups) == 0 {
-		return []noteTrack{track}
+		return []NoteTrack{track}
 	}
 
-	newNoteTracks := make([]noteTrack, len(noteGroups)+1)
+	newNoteTracks := make([]NoteTrack, len(noteGroups)+1)
 	for _, note := range track.Notes {
 		index := getIndexForDrumTrackGroup(note, noteGroups)
 		newNoteTracks[index].Notes = append(newNoteTracks[index].Notes, note)
@@ -36,7 +35,7 @@ func splitIntoTracks(track noteTrack, noteGroups []drumtrack.NoteGroup) []noteTr
 	return newNoteTracks
 }
 
-func setSplitTrackNames(oldName string, tracks []noteTrack) []noteTrack {
+func setSplitTrackNames(oldName string, tracks []NoteTrack) []NoteTrack {
 	for i := range tracks {
 		tracks[i].Name = fmt.Sprintf("%s - Split %d", oldName, i+1)
 	}

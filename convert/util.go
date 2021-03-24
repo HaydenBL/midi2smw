@@ -1,8 +1,6 @@
 package convert
 
-import "midi2smw/convert/drumtrack"
-
-func getIndexForDrumTrackGroup(note midiNote, noteGroups []drumtrack.NoteGroup) int {
+func getIndexForDrumTrackGroup(note MidiNote, noteGroups []NoteGroup) int {
 	for i, noteGroup := range noteGroups {
 		if contains(note.Key, noteGroup.Notes) {
 			return i
@@ -20,18 +18,18 @@ func contains(num uint8, arr []uint8) bool {
 	return false
 }
 
-func findNoteIndex(notes []midiNote, key uint8) (int, midiNote) {
+func findNoteIndex(notes []MidiNote, key uint8) (int, MidiNote) {
 	for i, note := range notes {
 		if note.Key == key {
 			return i, note
 		}
 	}
-	return -1, midiNote{}
+	return -1, MidiNote{}
 }
 
-func deleteAtIndex(notes []midiNote, i int) []midiNote {
+func deleteAtIndex(notes []MidiNote, i int) []MidiNote {
 	copy(notes[i:], notes[i+1:])
-	notes[len(notes)-1] = midiNote{}
+	notes[len(notes)-1] = MidiNote{}
 	notes = notes[:len(notes)-1]
 	return notes
 }
