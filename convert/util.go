@@ -58,7 +58,7 @@ func containsDuplicates(arr []uint8) bool {
 	return false
 }
 
-func getIndexForDrumTrackGroup(note MidiNote, noteGroups []NoteGroup) int {
+func getIndexForNoteGroup(note MidiNote, noteGroups []NoteGroup) int {
 	for i, noteGroup := range noteGroups {
 		if contains(note.Key, noteGroup.Notes) {
 			return i

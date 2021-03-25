@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func Test_splitDrumTracks(t *testing.T) {
+func Test_splitAllTracks(t *testing.T) {
 	tracks := []NoteTrack{
 		{
 			Name: "Bass Drum",
@@ -158,7 +158,7 @@ func Test_splitDrumTracks(t *testing.T) {
 	}
 
 	if !tracksAreEqual(tracks, expectedTracks) {
-		t.Fatalf("Split drum track channel not what was expected")
+		t.Fatalf("Split track channel not what was expected")
 	}
 }
 

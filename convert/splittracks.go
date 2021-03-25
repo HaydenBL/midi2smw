@@ -6,7 +6,7 @@ import (
 
 func splitAllTracks(tracks []NoteTrack, midiTracksWithNoteGroups []MidiTrackWithNoteGroups) []NoteTrack {
 	if len(tracks) != len(midiTracksWithNoteGroups) {
-		fmt.Printf("Error splitting drum tracks")
+		fmt.Printf("Error splitting tracks - lengths not equal")
 		return tracks
 	}
 
@@ -28,7 +28,7 @@ func splitIntoTracks(track NoteTrack, noteGroups []NoteGroup) []NoteTrack {
 
 	newNoteTracks := make([]NoteTrack, len(noteGroups)+1)
 	for _, note := range track.Notes {
-		index := getIndexForDrumTrackGroup(note, noteGroups)
+		index := getIndexForNoteGroup(note, noteGroups)
 		newNoteTracks[index].Notes = append(newNoteTracks[index].Notes, note)
 	}
 	newNoteTracks = setSplitTrackNames(track.Name, newNoteTracks)

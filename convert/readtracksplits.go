@@ -17,7 +17,7 @@ type NoteGroup struct {
 	Notes []uint8
 }
 
-func SpecifyDrumTrackGroups(midiTracks []midi.Track) []MidiTrackWithNoteGroups {
+func SpecifyTrackSplits(midiTracks []midi.Track) []MidiTrackWithNoteGroups {
 	sc := bufio.NewScanner(os.Stdin)
 
 	tracksWithNoteGroups := make([]MidiTrackWithNoteGroups, len(midiTracks))
@@ -31,7 +31,7 @@ func SpecifyDrumTrackGroups(midiTracks []midi.Track) []MidiTrackWithNoteGroups {
 			break
 		}
 
-		noteGroups := readDrumTrackGroups(sc)
+		noteGroups := readTrackGroups(sc)
 		if len(noteGroups) > 0 {
 			tracksWithNoteGroups[index].NoteGroups = noteGroups
 		}
@@ -66,7 +66,7 @@ func promptToSplitTracks(sc *bufio.Scanner, midiTracks []midi.Track) int {
 	return -1
 }
 
-func readDrumTrackGroups(sc *bufio.Scanner) []NoteGroup {
+func readTrackGroups(sc *bufio.Scanner) []NoteGroup {
 	noteGroups := make([]NoteGroup, 0)
 
 	for true {
