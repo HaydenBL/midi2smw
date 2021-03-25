@@ -31,11 +31,13 @@ func TestCreateSmwChannelTrack_singleTrack(t *testing.T) {
 	expected := []SmwNote{
 		{
 			Key:          "c",
+			KeyValue:     24,
 			LengthValues: []uint8{64},
 			Octave:       1,
 		},
 		{
 			Key:          "c",
+			KeyValue:     24,
 			LengthValues: []uint8{32},
 			Octave:       1,
 		},
@@ -46,16 +48,17 @@ func TestCreateSmwChannelTrack_singleTrack(t *testing.T) {
 		},
 		{
 			Key:          "c",
+			KeyValue:     24,
 			LengthValues: []uint8{32},
 			Octave:       1,
 		},
 	}
 
-	smwNotes := createSmwChannelTrack(notes, "", 210, noteLengthConverter)
+	smwNotes := createSmwChannelTrack(NoteTrack{Notes: notes}, 210, noteLengthConverter)
 	if len(smwNotes.ChannelTracks) != 1 {
 		t.Fatalf("Expected 1 track, got %d", len(smwNotes.ChannelTracks))
 	}
-	if !reflect.DeepEqual(smwNotes.ChannelTracks[0], expected) {
+	if !reflect.DeepEqual(smwNotes.ChannelTracks[0].Notes, expected) {
 		t.Fatalf("Not equal?")
 	}
 
@@ -77,6 +80,7 @@ func TestCreateSmwChannelTrack_padsEndingProperly(t *testing.T) {
 	expected := []SmwNote{
 		{
 			Key:          "c",
+			KeyValue:     24,
 			LengthValues: []uint8{64},
 			Octave:       1,
 		},
@@ -87,11 +91,11 @@ func TestCreateSmwChannelTrack_padsEndingProperly(t *testing.T) {
 		},
 	}
 
-	smwNotes := createSmwChannelTrack(notes, "", 60, noteLengthConverter)
+	smwNotes := createSmwChannelTrack(NoteTrack{Notes: notes}, 60, noteLengthConverter)
 	if len(smwNotes.ChannelTracks) != 1 {
 		t.Fatalf("Expected 1 track, got %d", len(smwNotes.ChannelTracks))
 	}
-	if !reflect.DeepEqual(smwNotes.ChannelTracks[0], expected) {
+	if !reflect.DeepEqual(smwNotes.ChannelTracks[0].Notes, expected) {
 		t.Fatalf("Not equal?")
 	}
 
@@ -123,11 +127,13 @@ func TestCreateSmwChannelTrack_multiTrack(t *testing.T) {
 	expectedTrack1 := []SmwNote{
 		{
 			Key:          "c",
+			KeyValue:     24,
 			LengthValues: []uint8{32},
 			Octave:       1,
 		},
 		{
 			Key:          "c",
+			KeyValue:     24,
 			LengthValues: []uint8{32},
 			Octave:       1,
 		},
@@ -141,6 +147,7 @@ func TestCreateSmwChannelTrack_multiTrack(t *testing.T) {
 		},
 		{
 			Key:          "c",
+			KeyValue:     24,
 			LengthValues: []uint8{32},
 			Octave:       1,
 		},
@@ -151,14 +158,14 @@ func TestCreateSmwChannelTrack_multiTrack(t *testing.T) {
 		},
 	}
 
-	smwNotes := createSmwChannelTrack(notes, "", 120, noteLengthConverter)
+	smwNotes := createSmwChannelTrack(NoteTrack{Notes: notes}, 120, noteLengthConverter)
 	if len(smwNotes.ChannelTracks) != 2 {
 		t.Fatalf("Expected 2 tracks, got %d", len(smwNotes.ChannelTracks))
 	}
-	if !reflect.DeepEqual(smwNotes.ChannelTracks[0], expectedTrack1) {
+	if !reflect.DeepEqual(smwNotes.ChannelTracks[0].Notes, expectedTrack1) {
 		t.Fatalf("First track not equal!")
 	}
-	if !reflect.DeepEqual(smwNotes.ChannelTracks[1], expectedTrack2) {
+	if !reflect.DeepEqual(smwNotes.ChannelTracks[1].Notes, expectedTrack2) {
 		t.Fatalf("Second track not equal!")
 	}
 }
