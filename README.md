@@ -20,11 +20,8 @@ Currently, the project has no third-party dependencies, so it's pretty easily to
 locally if you want to tweak something yourself.
 
 ### TODO
-* Sample switching
 * Output to a file
 * Optimize outputs (loops, dotted notes)
-* Import file and whatever else from command line argument (currently hardcoding path)
-* Probably should do better error handling
 
 ### Special Thanks
 * [OneLoneCoder's video on midi parsing](https://youtu.be/040BKtnDdg0)

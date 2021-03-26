@@ -5,7 +5,7 @@ import (
 	"midi2smw/midi"
 )
 
-func Convert(midiFile midi.MidiFile, splitTracks, setSamples bool) []SmwTrack {
+func Convert(midiFile midi.File, splitTracks, setSamples bool) []SmwTrack {
 	fmt.Println("Converting midi tracks...")
 
 	midiTracks := filterOtherEventTypes(midiFile.MidiTracks)

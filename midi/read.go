@@ -2,8 +2,18 @@ package midi
 
 import (
 	"encoding/binary"
+	"fmt"
 	"os"
 )
+
+func readByte(file *os.File) uint8 {
+	var i uint8
+	err := binary.Read(file, binary.BigEndian, &i)
+	if err != nil {
+		fmt.Printf("Error reading: %d\n", err)
+	}
+	return i
+}
 
 func readString(file *os.File, length uint32) string {
 	b := make([]byte, length)
@@ -17,9 +27,8 @@ func readString(file *os.File, length uint32) string {
 // and we'll just shift them all into a 32 bit integer while the flag is set
 func readValue(file *os.File) uint32 {
 	var finalValue uint32 = 0
-	var aByte uint8 = 0
 
-	binary.Read(file, binary.BigEndian, &aByte)
+	aByte := readByte(file)
 	finalValue = uint32(aByte)
 
 	// If MSB is set, we need to read more bytes in
@@ -27,7 +36,7 @@ func readValue(file *os.File) uint32 {
 		finalValue &= 0x7F                             // Extract bottom 7 bits of read byte
 		for ok := true; ok; ok = (aByte & 0x80) != 0 { // Loop while MSB is 1
 			// Read next byte
-			binary.Read(file, binary.BigEndian, &aByte)
+			aByte = readByte(file)
 
 			// Shift 7 bits in, apply value from last byte read into their position
 			finalValue = (finalValue << 7) | (uint32(aByte) & 0x7F)

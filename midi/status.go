@@ -24,7 +24,11 @@ func readStatus(file *os.File, sc *scanContext) error {
 	// and we have to seek back one byte because it was actually an event!
 	if sc.status < 0x80 {
 		sc.status = sc.previousStatus
-		file.Seek(-1, 1) // seek back 1 byte from current position
+		_, err := file.Seek(-1, 1) // seek back 1 byte from current position
+		if err != nil {
+			fmt.Printf("Error seeking backwards in file")
+			return err
+		}
 	}
 	return nil
 }
@@ -32,27 +36,22 @@ func readStatus(file *os.File, sc *scanContext) error {
 func handleStatus(file *os.File, track *Track, sc *scanContext) (*Event, error) {
 
 	if (sc.status & 0xF0) == voiceNoteOff {
-		//var channel uint8
-		var noteID, noteVelocity uint8
 		sc.previousStatus = sc.status
-		//channel = status & 0x0F
+		channel := sc.status & 0x0F
+		_ = channel // not doing anything with channel for now
 
-		binary.Read(file, binary.BigEndian, &noteID)
-		if err := binary.Read(file, binary.BigEndian, &noteVelocity); err != nil {
-			return nil, err
-		}
+		noteID := readByte(file)
+		noteVelocity := readByte(file)
 
 		return &Event{NoteOff, noteID, noteVelocity, sc.statusTimeDelta}, nil
 
 	} else if (sc.status & 0xF0) == voiceNoteOn {
-		//var channel uint8
-		var noteID, noteVelocity uint8
 		sc.previousStatus = sc.status
-		//channel = sc.status & 0x0F
-		binary.Read(file, binary.BigEndian, &noteID)
-		if err := binary.Read(file, binary.BigEndian, &noteVelocity); err != nil {
-			return nil, err
-		}
+		channel := sc.status & 0x0F
+		_ = channel // not doing anything with channel for now
+
+		noteID := readByte(file)
+		noteVelocity := readByte(file)
 
 		if noteVelocity == 0 {
 			return &Event{NoteOff, noteID, noteVelocity, sc.statusTimeDelta}, nil
@@ -61,60 +60,55 @@ func handleStatus(file *os.File, track *Track, sc *scanContext) (*Event, error) 
 		}
 
 	} else if (sc.status & 0xF0) == voiceAftertouch {
-		//var channel uint8
-		var noteID, noteVelocity uint8
 		sc.previousStatus = sc.status
-		//channel = sc.status & 0x0F
-		binary.Read(file, binary.BigEndian, &noteID)
-		if err := binary.Read(file, binary.BigEndian, &noteVelocity); err != nil {
-			return nil, err
-		}
+		channel := sc.status & 0x0F
+		_ = channel // not doing anything with channel for now
+
+		noteID := readByte(file)
+		noteVelocity := readByte(file)
+		_, _ = noteID, noteVelocity // not doing anything with these for now
 
 		return &Event{Other, 0, 0, sc.statusTimeDelta}, nil
 
 	} else if (sc.status & 0xF0) == voiceControlChange {
-		//var channel uint8
-		var controlID, controlValue uint8
 		sc.previousStatus = sc.status
-		//channel = sc.status & 0x0F
-		binary.Read(file, binary.BigEndian, &controlID)
-		if err := binary.Read(file, binary.BigEndian, &controlValue); err != nil {
-			return nil, err
-		}
+		channel := sc.status & 0x0F
+		_ = channel // not doing anything with channel for now
+
+		controlID := readByte(file)
+		controlValue := readByte(file)
+		_, _ = controlID, controlValue // not doing anything with these for now
 
 		return &Event{Other, 0, 0, sc.statusTimeDelta}, nil
 
 	} else if (sc.status & 0xF0) == voiceProgramChange {
-		//var channel uint8
-		var programID uint8
 		sc.previousStatus = sc.status
-		//channel = sc.status & 0x0F
-		if err := binary.Read(file, binary.BigEndian, &programID); err != nil {
-			return nil, err
-		}
+		channel := sc.status & 0x0F
+		_ = channel // not doing anything with channel for now
+
+		programID := readByte(file)
+		_ = programID // not doing anything with this for now
 
 		return &Event{Other, 0, 0, sc.statusTimeDelta}, nil
 
 	} else if (sc.status & 0xF0) == voiceChannelPressure {
-		//var channel uint8
-		var channelPressure uint8
 		sc.previousStatus = sc.status
-		//channel = sc.status & 0x0F
-		if err := binary.Read(file, binary.BigEndian, &channelPressure); err != nil {
-			return nil, err
-		}
+		channel := sc.status & 0x0F
+		_ = channel // not doing anything with channel for now
+
+		channelPressure := readByte(file)
+		_ = channelPressure // not doing anything with this for now
 
 		return &Event{Other, 0, 0, sc.statusTimeDelta}, nil
 
 	} else if (sc.status & 0xF0) == voicePitchBend {
-		//var channel uint8
-		var LS7B, MS7B uint8
 		sc.previousStatus = sc.status
-		//channel = sc.status & 0x0F
-		binary.Read(file, binary.BigEndian, &LS7B)
-		if err := binary.Read(file, binary.BigEndian, &MS7B); err != nil {
-			return nil, err
-		}
+		channel := sc.status & 0x0F
+		_ = channel // not doing anything with channel for now
+
+		LS7B := readByte(file)
+		MS7B := readByte(file)
+		_, _ = LS7B, MS7B // not doing anything with these for now
 
 		return &Event{Other, 0, 0, sc.statusTimeDelta}, nil
 

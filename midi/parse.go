@@ -66,7 +66,10 @@ func parseTrack(file *os.File) (Track, error) {
 
 	// Read track header
 	// First 4 bytes, file ID (always MTrk)
-	binary.Read(file, binary.BigEndian, &MTrk)
+	err := binary.Read(file, binary.BigEndian, &MTrk)
+	if err != nil {
+		return *track, err
+	}
 	// Next 4 bytes are track length
 	if err := binary.Read(file, binary.BigEndian, &track.Length); err != nil {
 		if err == io.EOF {

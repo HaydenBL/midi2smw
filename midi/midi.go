@@ -25,7 +25,7 @@ type Track struct {
 	Events     []Event
 }
 
-type MidiFile struct {
+type File struct {
 	MidiTracks       []Track
 	Bpm              uint32
 	TicksPer64thNote uint32
@@ -37,26 +37,26 @@ const (
 	Other   EventType = 2
 )
 
-func Parse(fileName string) (MidiFile, error) {
-	var mf MidiFile
+func Parse(fileName string) (File, error) {
+	var mf File
 
 	file, err := os.Open(fileName)
 	if err != nil {
 		fmt.Println("Error reading file", err)
-		return MidiFile{}, err
+		return File{}, err
 	}
 	defer file.Close()
 
 	var numTracks uint16
 	numTracks, mf.TicksPer64thNote, err = parseHeader(file)
 	if err != nil {
-		return MidiFile{}, err
+		return File{}, err
 	}
 
 	for i := 0; i < int(numTracks); i++ {
 		track, err := parseTrack(file)
 		if err != nil {
-			return MidiFile{}, err
+			return File{}, err
 		}
 		if mf.Bpm == 0 {
 			mf.Bpm = track.Bpm

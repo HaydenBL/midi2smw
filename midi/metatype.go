@@ -1,7 +1,6 @@
 package midi
 
 import (
-	"encoding/binary"
 	"fmt"
 	"os"
 )
@@ -28,17 +27,15 @@ const (
 )
 
 func handleMetaType(file *os.File, track *Track) (bpm uint32, endOfTrack bool) {
-	var metaType, length uint8
 
-	binary.Read(file, binary.BigEndian, &metaType)
-	length = uint8(readValue(file))
+	metaType := readByte(file)
+	length := uint8(readValue(file))
 
 	switch metaType {
 
 	case metaSequence:
-		var val1, val2 uint8
-		binary.Read(file, binary.BigEndian, &val1)
-		binary.Read(file, binary.BigEndian, &val2)
+		val1 := readByte(file)
+		val2 := readByte(file)
 		fmt.Printf("Sequence number: %d %d\n", val1, val2)
 
 	case metaText:
@@ -71,13 +68,11 @@ func handleMetaType(file *os.File, track *Track) (bpm uint32, endOfTrack bool) {
 		fmt.Printf("Meta device port: %s\n", readString(file, uint32(length)))
 
 	case metaChannelPrefix:
-		var prefix uint8
-		binary.Read(file, binary.BigEndian, &prefix)
+		prefix := readByte(file)
 		fmt.Printf("Prefix: %d\n", prefix)
 
 	case metaMIDIPort:
-		var port uint8
-		binary.Read(file, binary.BigEndian, port)
+		port := readByte(file)
 		fmt.Printf("MIDI port: %d\n", port)
 
 	case metaEndOfTrack:
@@ -87,43 +82,39 @@ func handleMetaType(file *os.File, track *Track) (bpm uint32, endOfTrack bool) {
 		// Tempo is in microseconds per quarter note
 		var tempo uint32 = 0
 		var b uint8
-		binary.Read(file, binary.BigEndian, &b)
+		b = readByte(file)
 		tempo |= uint32(b) << 16
-		binary.Read(file, binary.BigEndian, &b)
+		b = readByte(file)
 		tempo |= uint32(b) << 8
-		binary.Read(file, binary.BigEndian, &b)
+		b = readByte(file)
 		tempo |= uint32(b) << 0
 		bpm = 60000000 / tempo
 
 		fmt.Printf("Tempo: %d (%d bpm)\n", tempo, bpm)
 
 	case metaSMPTEOffset:
-		var h, m, s, fr, ff uint8
-		binary.Read(file, binary.BigEndian, &h)
-		binary.Read(file, binary.BigEndian, &m)
-		binary.Read(file, binary.BigEndian, &s)
-		binary.Read(file, binary.BigEndian, &fr)
-		binary.Read(file, binary.BigEndian, &ff)
+		h := readByte(file)
+		m := readByte(file)
+		s := readByte(file)
+		fr := readByte(file)
+		ff := readByte(file)
 		fmt.Printf("SMPTE: H: %d M: %d S: %d FR: %d FF: %d\n", h, m, s, fr, ff)
 
 	case metaTimeSignature:
-		var val1, val2 uint8
-
-		binary.Read(file, binary.BigEndian, &val1)
-		binary.Read(file, binary.BigEndian, &val2)
+		val1 := readByte(file)
+		val2 := readByte(file)
 		fmt.Printf("Time signature: %d/%d\n", val1, 2<<val2)
 
-		binary.Read(file, binary.BigEndian, &val1)
+		val1 = readByte(file)
 		fmt.Printf("Clocks per tick: %d\n", val1)
 
 		// A MIDI "Beat" is 24 ticks, so specify how many 32nd notes constitute a beat
-		binary.Read(file, binary.BigEndian, &val1)
+		val1 = readByte(file)
 		fmt.Printf("32per24Clocks: %d\n", val1)
 
 	case metaKeySignature:
-		var keySignature, minorKey uint8
-		binary.Read(file, binary.BigEndian, &keySignature)
-		binary.Read(file, binary.BigEndian, &minorKey)
+		keySignature := readByte(file)
+		minorKey := readByte(file)
 
 		fmt.Printf("Key signature: %d\n", keySignature)
 		fmt.Printf("Minor key: %d\n", minorKey)
