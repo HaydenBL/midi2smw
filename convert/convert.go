@@ -5,25 +5,16 @@ import (
 	"midi2smw/midi"
 )
 
-func Convert(midiFile midi.MidiFile, splitTracksFlag, samplesFlag bool) []SmwTrack {
+func Convert(midiFile midi.MidiFile, splitTracks, setSamples bool) []SmwTrack {
 	fmt.Println("Converting midi tracks...")
 
 	midiTracks := filterOtherEventTypes(midiFile.MidiTracks)
 	midiTracks = filterEmptyTracks(midiTracks)
 
-	midiTracksWithNoteGroups := make([]MidiTrackWithNoteGroups, len(midiTracks))
-	if splitTracksFlag {
-		midiTracksWithNoteGroups = SpecifyTrackSplits(midiTracks)
-	} else {
-		for i, track := range midiTracks {
-			midiTracksWithNoteGroups[i].Track = track
-		}
-	}
-
-	noteTracks := convertNotes(midiTracksWithNoteGroups)
+	noteTracks := convertToNotes(midiTracks, splitTracks)
 	noteTracks = quantizeNotesOnAllTracks(noteTracks, midiFile.TicksPer64thNote)
 
-	if samplesFlag {
+	if setSamples {
 		noteTracks = GetDefaultSamples(noteTracks)
 		noteTracks = SpecifySamples(noteTracks)
 	}

@@ -21,10 +21,10 @@ type NoteTrack struct {
 	SampleMap     map[uint8]uint8
 }
 
-func convertNotes(tracks []MidiTrackWithNoteGroups) []NoteTrack {
-	var noteTracks = make([]NoteTrack, len(tracks))
+func convertToNotes(midiTracks []midi.Track, splitTracks bool) []NoteTrack {
+	var noteTracks = make([]NoteTrack, len(midiTracks))
 
-	for trackIndex, track := range tracks {
+	for trackIndex, track := range midiTracks {
 		var wallTime uint32
 		var notesBeingProcessed []MidiNote
 
@@ -48,7 +48,10 @@ func convertNotes(tracks []MidiTrackWithNoteGroups) []NoteTrack {
 	}
 
 	noteTracks = filterEmptyNoteTracks(noteTracks)
-	noteTracks = splitAllTracks(noteTracks, tracks)
+	if splitTracks {
+		trackSplitMap := SpecifyTrackSplits(midiTracks)
+		noteTracks = splitAllTracks(noteTracks, trackSplitMap)
+	}
 
 	return noteTracks
 }

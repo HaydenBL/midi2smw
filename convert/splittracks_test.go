@@ -20,6 +20,18 @@ func Test_splitAllTracks(t *testing.T) {
 			},
 		},
 		{
+			Name: "Piano",
+			Notes: []MidiNote{
+				{Key: 0},
+				{Key: 1},
+				{Key: 4},
+				{Key: 1},
+				{Key: 5},
+				{Key: 3},
+				{Key: 3},
+			},
+		},
+		{
 			Name: "Snare",
 			Notes: []MidiNote{
 				{Key: 0},
@@ -43,36 +55,24 @@ func Test_splitAllTracks(t *testing.T) {
 				{Key: 3},
 			},
 		},
-		{
-			Name: "Piano",
-			Notes: []MidiNote{
-				{Key: 0},
-				{Key: 1},
-				{Key: 4},
-				{Key: 1},
-				{Key: 5},
-				{Key: 3},
-				{Key: 3},
-			},
-		},
 	}
 
-	midiTracks := []MidiTrackWithNoteGroups{
-		{NoteGroups: []NoteGroup{
+	trackSplitMap := map[int][]NoteGroup{
+		0: {
 			{[]uint8{0, 3}},
 			{[]uint8{1}},
-		}},
-		{NoteGroups: []NoteGroup{
-			{[]uint8{0, 3}},
-		}},
-		{NoteGroups: []NoteGroup{
+		},
+		3: {
 			{[]uint8{3}},
 			{[]uint8{1}},
 			{[]uint8{0}},
-		}},
-		{NoteGroups: []NoteGroup{}},
+		},
+		1: {},
+		2: {
+			{[]uint8{0, 3}},
+		},
 	}
-	tracks = splitAllTracks(tracks, midiTracks)
+	tracks = splitAllTracks(tracks, trackSplitMap)
 
 	expectedTracks := []NoteTrack{
 		{
@@ -95,6 +95,18 @@ func Test_splitAllTracks(t *testing.T) {
 			Notes: []MidiNote{
 				{Key: 4},
 				{Key: 5},
+			},
+		},
+		{
+			Name: "Piano",
+			Notes: []MidiNote{
+				{Key: 0},
+				{Key: 1},
+				{Key: 4},
+				{Key: 1},
+				{Key: 5},
+				{Key: 3},
+				{Key: 3},
 			},
 		},
 		{
@@ -140,19 +152,6 @@ func Test_splitAllTracks(t *testing.T) {
 			Notes: []MidiNote{
 				{Key: 4},
 				{Key: 5},
-			},
-		},
-
-		{
-			Name: "Piano",
-			Notes: []MidiNote{
-				{Key: 0},
-				{Key: 1},
-				{Key: 4},
-				{Key: 1},
-				{Key: 5},
-				{Key: 3},
-				{Key: 3},
 			},
 		},
 	}

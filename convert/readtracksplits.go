@@ -8,22 +8,16 @@ import (
 	"strings"
 )
 
-type MidiTrackWithNoteGroups struct {
-	midi.Track
-	NoteGroups []NoteGroup
-}
+type TrackSplitMap map[int][]NoteGroup // Maps a track index to an array of note grouping
 
 type NoteGroup struct {
 	Notes []uint8
 }
 
-func SpecifyTrackSplits(midiTracks []midi.Track) []MidiTrackWithNoteGroups {
+func SpecifyTrackSplits(midiTracks []midi.Track) TrackSplitMap {
 	sc := bufio.NewScanner(os.Stdin)
 
-	tracksWithNoteGroups := make([]MidiTrackWithNoteGroups, len(midiTracks))
-	for i, track := range midiTracks {
-		tracksWithNoteGroups[i].Track = track
-	}
+	trackSplits := make(TrackSplitMap)
 
 	for true {
 		index := promptToSplitTracks(sc, midiTracks)
@@ -33,11 +27,11 @@ func SpecifyTrackSplits(midiTracks []midi.Track) []MidiTrackWithNoteGroups {
 
 		noteGroups := readTrackGroups(sc)
 		if len(noteGroups) > 0 {
-			tracksWithNoteGroups[index].NoteGroups = noteGroups
+			trackSplits[index] = noteGroups
 		}
 	}
 
-	return tracksWithNoteGroups
+	return trackSplits
 
 }
 

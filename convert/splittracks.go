@@ -4,15 +4,15 @@ import (
 	"fmt"
 )
 
-func splitAllTracks(tracks []NoteTrack, midiTracksWithNoteGroups []MidiTrackWithNoteGroups) []NoteTrack {
-	if len(tracks) != len(midiTracksWithNoteGroups) {
-		fmt.Printf("Error splitting tracks - lengths not equal")
-		return tracks
-	}
-
+func splitAllTracks(tracks []NoteTrack, trackSplitMap TrackSplitMap) []NoteTrack {
 	newNoteTracks := make([]NoteTrack, 0)
-	for i := range tracks {
-		splitTracks := splitIntoTracks(tracks[i], midiTracksWithNoteGroups[i].NoteGroups)
+	for i, track := range tracks {
+		noteGroups, ok := trackSplitMap[i]
+		if !ok {
+			newNoteTracks = append(newNoteTracks, track)
+			continue
+		}
+		splitTracks := splitIntoTracks(track, noteGroups)
 		splitTracks = filterEmptyNoteTracks(splitTracks)
 		for _, newTrack := range splitTracks {
 			newNoteTracks = append(newNoteTracks, newTrack)
