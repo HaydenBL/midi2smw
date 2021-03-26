@@ -1,6 +1,6 @@
 package convert
 
-func quantizeNotesOnAllTracks(tracks []noteTrack, ticksPer64thNote uint32) []noteTrack {
+func quantizeNotesOnAllTracks(tracks []NoteTrack, ticksPer64thNote uint32) []NoteTrack {
 	quantizer := getQuantizer(ticksPer64thNote)
 	for i, track := range tracks {
 		tracks[i].Notes = quantizeNotes(track.Notes, quantizer)
@@ -8,8 +8,8 @@ func quantizeNotesOnAllTracks(tracks []noteTrack, ticksPer64thNote uint32) []not
 	return tracks
 }
 
-func quantizeNotes(notes []midiNote, quantizer func(uint32) uint32) []midiNote {
-	quantizedNotes := make([]midiNote, 0)
+func quantizeNotes(notes []MidiNote, quantizer func(uint32) uint32) []MidiNote {
+	quantizedNotes := make([]MidiNote, 0)
 	for _, note := range notes {
 		note.StartTime = quantizer(note.StartTime)
 		note.Duration = quantizer(note.Duration)

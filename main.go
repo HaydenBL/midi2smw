@@ -4,32 +4,28 @@ import (
 	"flag"
 	"fmt"
 	"midi2smw/convert"
-	"midi2smw/drumtrack"
 	"midi2smw/midi"
 	"midi2smw/write"
 	"os"
 )
 
 func main() {
-	fileName, drumTracksFlag := parseFlags()
-	begin(fileName, drumTracksFlag)
+	fileName, splitTracksFlag, samplesFlag := parseFlags()
+	begin(fileName, splitTracksFlag, samplesFlag)
 }
 
-func parseFlags() (fileName string, drumTracksFlag bool) {
-	drumTracksFlagPtr := flag.Bool("drumtracks", false, "Specify drum tracks and note groupings")
+func parseFlags() (fileName string, splitTracksFlag, samplesFlag bool) {
+	splitTracksFlagPtr := flag.Bool("split", false, "Specify tracks to split with note groupings")
+	samplesFlagPtr := flag.Bool("samples", false, "Specify samples for notes")
 	flag.Parse()
 	if len(flag.Args()) < 1 {
 		fmt.Println("Error: no file name provided")
 		os.Exit(1)
 	}
-	return flag.Args()[0], *drumTracksFlagPtr
+	return flag.Args()[0], *splitTracksFlagPtr, *samplesFlagPtr
 }
 
-func begin(fileName string, drumTracksFlag bool) {
-	var drumTrackGroups []drumtrack.Group
-	if drumTracksFlag {
-		drumTrackGroups = getDrumTrackGroups()
-	}
+func begin(fileName string, splitTracksFlag, samplesFlag bool) {
 
 	fmt.Printf("========== BEGIN PARSING ==========\n\n")
 
@@ -41,21 +37,11 @@ func begin(fileName string, drumTracksFlag bool) {
 
 	fmt.Printf("\n\n\n========== BEGIN CONVERTING ==========\n\n")
 
-	tracks := convert.Convert(midiFile, drumTrackGroups)
+	tracks := convert.Convert(midiFile, splitTracksFlag, samplesFlag)
 
 	fmt.Printf("\n\n\n========== BEGIN WRITING ==========\n\n")
 
 	write.AllTracks(tracks, midiFile.Bpm)
 
 	fmt.Printf("\n\n\n========== COMPLETE ==========\n")
-}
-
-func getDrumTrackGroups() []drumtrack.Group {
-	var err error
-	var drumTrackGroups []drumtrack.Group
-	if drumTrackGroups, err = drumtrack.SpecifyDrumTrackGroups(); err != nil {
-		fmt.Println(err)
-		os.Exit(2)
-	}
-	return drumTrackGroups
 }

@@ -6,11 +6,11 @@ import (
 )
 
 func TestCreateSmwChannelTrack_singleTrack(t *testing.T) {
-	var notes []midiNote
+	var notes []MidiNote
 	var ticksPer64thNote uint32 = 30
 	noteLengthConverter := getNoteLengthConverter(ticksPer64thNote)
 
-	notes = []midiNote{
+	notes = []MidiNote{
 		{
 			Key:       24,
 			StartTime: 0,
@@ -31,11 +31,13 @@ func TestCreateSmwChannelTrack_singleTrack(t *testing.T) {
 	expected := []SmwNote{
 		{
 			Key:          "c",
+			KeyValue:     24,
 			LengthValues: []uint8{64},
 			Octave:       1,
 		},
 		{
 			Key:          "c",
+			KeyValue:     24,
 			LengthValues: []uint8{32},
 			Octave:       1,
 		},
@@ -46,27 +48,28 @@ func TestCreateSmwChannelTrack_singleTrack(t *testing.T) {
 		},
 		{
 			Key:          "c",
+			KeyValue:     24,
 			LengthValues: []uint8{32},
 			Octave:       1,
 		},
 	}
 
-	smwNotes := createSmwChannelTrack(notes, "", 210, noteLengthConverter)
+	smwNotes := createSmwChannelTrack(NoteTrack{Notes: notes}, 210, noteLengthConverter)
 	if len(smwNotes.ChannelTracks) != 1 {
 		t.Fatalf("Expected 1 track, got %d", len(smwNotes.ChannelTracks))
 	}
-	if !reflect.DeepEqual(smwNotes.ChannelTracks[0], expected) {
+	if !reflect.DeepEqual(smwNotes.ChannelTracks[0].Notes, expected) {
 		t.Fatalf("Not equal?")
 	}
 
 }
 
 func TestCreateSmwChannelTrack_padsEndingProperly(t *testing.T) {
-	var notes []midiNote
+	var notes []MidiNote
 	var ticksPer64thNote uint32 = 30
 	noteLengthConverter := getNoteLengthConverter(ticksPer64thNote)
 
-	notes = []midiNote{
+	notes = []MidiNote{
 		{
 			Key:       24,
 			StartTime: 0,
@@ -77,6 +80,7 @@ func TestCreateSmwChannelTrack_padsEndingProperly(t *testing.T) {
 	expected := []SmwNote{
 		{
 			Key:          "c",
+			KeyValue:     24,
 			LengthValues: []uint8{64},
 			Octave:       1,
 		},
@@ -87,22 +91,22 @@ func TestCreateSmwChannelTrack_padsEndingProperly(t *testing.T) {
 		},
 	}
 
-	smwNotes := createSmwChannelTrack(notes, "", 60, noteLengthConverter)
+	smwNotes := createSmwChannelTrack(NoteTrack{Notes: notes}, 60, noteLengthConverter)
 	if len(smwNotes.ChannelTracks) != 1 {
 		t.Fatalf("Expected 1 track, got %d", len(smwNotes.ChannelTracks))
 	}
-	if !reflect.DeepEqual(smwNotes.ChannelTracks[0], expected) {
+	if !reflect.DeepEqual(smwNotes.ChannelTracks[0].Notes, expected) {
 		t.Fatalf("Not equal?")
 	}
 
 }
 
 func TestCreateSmwChannelTrack_multiTrack(t *testing.T) {
-	var notes []midiNote
+	var notes []MidiNote
 	var ticksPer64thNote uint32 = 30
 	noteLengthConverter := getNoteLengthConverter(ticksPer64thNote)
 
-	notes = []midiNote{
+	notes = []MidiNote{
 		{
 			Key:       24,
 			StartTime: 0,
@@ -123,11 +127,13 @@ func TestCreateSmwChannelTrack_multiTrack(t *testing.T) {
 	expectedTrack1 := []SmwNote{
 		{
 			Key:          "c",
+			KeyValue:     24,
 			LengthValues: []uint8{32},
 			Octave:       1,
 		},
 		{
 			Key:          "c",
+			KeyValue:     24,
 			LengthValues: []uint8{32},
 			Octave:       1,
 		},
@@ -141,6 +147,7 @@ func TestCreateSmwChannelTrack_multiTrack(t *testing.T) {
 		},
 		{
 			Key:          "c",
+			KeyValue:     24,
 			LengthValues: []uint8{32},
 			Octave:       1,
 		},
@@ -151,14 +158,14 @@ func TestCreateSmwChannelTrack_multiTrack(t *testing.T) {
 		},
 	}
 
-	smwNotes := createSmwChannelTrack(notes, "", 120, noteLengthConverter)
+	smwNotes := createSmwChannelTrack(NoteTrack{Notes: notes}, 120, noteLengthConverter)
 	if len(smwNotes.ChannelTracks) != 2 {
 		t.Fatalf("Expected 2 tracks, got %d", len(smwNotes.ChannelTracks))
 	}
-	if !reflect.DeepEqual(smwNotes.ChannelTracks[0], expectedTrack1) {
+	if !reflect.DeepEqual(smwNotes.ChannelTracks[0].Notes, expectedTrack1) {
 		t.Fatalf("First track not equal!")
 	}
-	if !reflect.DeepEqual(smwNotes.ChannelTracks[1], expectedTrack2) {
+	if !reflect.DeepEqual(smwNotes.ChannelTracks[1].Notes, expectedTrack2) {
 		t.Fatalf("Second track not equal!")
 	}
 }
@@ -167,21 +174,21 @@ func TestNoteValueToSmwKey(t *testing.T) {
 	var k uint8
 	// too low for SMW note
 	for k = 0; k < 19; k++ {
-		key, octave := noteValueToSmwKey(midiNote{Key: k})
+		key, octave := noteValueToSmwKey(MidiNote{Key: k})
 		if key != "r" || octave != 0 {
 			t.Fatalf("Should error when key value too low")
 		}
 	}
 	// valid SMW note range
 	for k = 19; k < 89; k++ {
-		key, _ := noteValueToSmwKey(midiNote{Key: k})
+		key, _ := noteValueToSmwKey(MidiNote{Key: k})
 		if key == "r" {
 			t.Fatalf("Shouldn't error when key value is within range")
 		}
 	}
 	// too high for SMW note
 	for k = 89; k < 128; k++ {
-		key, octave := noteValueToSmwKey(midiNote{Key: k})
+		key, octave := noteValueToSmwKey(MidiNote{Key: k})
 		if key != "r" || octave != 0 {
 			t.Fatalf("Should error when key value too high")
 		}

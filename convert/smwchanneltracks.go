@@ -6,12 +6,20 @@ import (
 
 type SmwNote struct {
 	Key          string
+	KeyValue     uint8
 	LengthValues []uint8
 	Octave       int
 }
+
+type ChannelTrack struct {
+	Notes         []SmwNote
+	DefaultSample uint8
+	SampleMap     map[uint8]uint8
+}
+
 type SmwTrack struct {
 	Name          string
-	ChannelTracks [][]SmwNote // if a midi track has chords/overlapping notes, we'll throw them into multiple channels
+	ChannelTracks []ChannelTrack // if a midi track has chords/overlapping notes, we'll throw them into multiple channels
 }
 
 var noteDict = map[int]string{
@@ -29,18 +37,18 @@ var noteDict = map[int]string{
 	11: "b",
 }
 
-func createSmwChannelTracksForAllTracks(noteTracks []noteTrack, ticksPer64thNote uint32) []SmwTrack {
+func createSmwChannelTracksForAllTracks(noteTracks []NoteTrack, ticksPer64thNote uint32) []SmwTrack {
 	var smwTracks []SmwTrack
 	longestTrackLength := getLongestTrackLength(noteTracks)
 	noteLengthConverter := getNoteLengthConverter(ticksPer64thNote)
 	for _, noteTrack := range noteTracks {
-		smwTrack := createSmwChannelTrack(noteTrack.Notes, noteTrack.Name, longestTrackLength, noteLengthConverter)
+		smwTrack := createSmwChannelTrack(noteTrack, longestTrackLength, noteLengthConverter)
 		smwTracks = append(smwTracks, smwTrack)
 	}
 	return smwTracks
 }
 
-func getLongestTrackLength(noteTracks []noteTrack) (longestTrackLength uint32) {
+func getLongestTrackLength(noteTracks []NoteTrack) (longestTrackLength uint32) {
 	for _, track := range noteTracks {
 		trackLength := getTrackLength(track)
 		if trackLength > longestTrackLength {
@@ -50,7 +58,7 @@ func getLongestTrackLength(noteTracks []noteTrack) (longestTrackLength uint32) {
 	return longestTrackLength
 }
 
-func getTrackLength(track noteTrack) uint32 {
+func getTrackLength(track NoteTrack) uint32 {
 	if len(track.Notes) < 1 {
 		return 0
 	}
@@ -58,14 +66,15 @@ func getTrackLength(track noteTrack) uint32 {
 	return lastNote.StartTime + lastNote.Duration
 }
 
-func createSmwChannelTrack(notes []midiNote, name string, length uint32, noteLengthConverter func(uint32) []uint8) SmwTrack {
+func createSmwChannelTrack(noteTrack NoteTrack, length uint32, noteLengthConverter func(uint32) []uint8) SmwTrack {
 	var smwTrack SmwTrack
-	smwTrack.Name = name
+	smwTrack.Name = noteTrack.Name
+	notes := noteTrack.Notes
 	// scan through track and create SMW channels until until no more notes
 	for len(notes) > 0 {
-		var smwChannel []SmwNote
+		var smwNoteChannel []SmwNote
 		var tick, lastNoteEndTime uint32
-		var activeNote *midiNote
+		var activeNote *MidiNote
 
 		for tick = 0; !trackDone(notes, tick); tick++ {
 			if activeNote != nil {
@@ -84,13 +93,13 @@ func createSmwChannelTrack(notes []midiNote, name string, length uint32, noteLen
 				if restLength != 0 {
 					lengths := noteLengthConverter(restLength)
 					restSmwNote := SmwNote{Key: "r", LengthValues: lengths, Octave: 0}
-					smwChannel = append(smwChannel, restSmwNote)
+					smwNoteChannel = append(smwNoteChannel, restSmwNote)
 				}
 			}
 			key, octave := noteValueToSmwKey(*activeNote)
 			lengths := noteLengthConverter(activeNote.Duration)
-			smwNote := SmwNote{key, lengths, octave}
-			smwChannel = append(smwChannel, smwNote)
+			smwNote := SmwNote{key, activeNote.Key, lengths, octave}
+			smwNoteChannel = append(smwNoteChannel, smwNote)
 			lastNoteEndTime = activeNote.StartTime + activeNote.Duration
 		}
 		if lastNoteEndTime < length {
@@ -98,14 +107,20 @@ func createSmwChannelTrack(notes []midiNote, name string, length uint32, noteLen
 			restLength := length - lastNoteEndTime
 			lengths := noteLengthConverter(restLength)
 			restSmwNote := SmwNote{Key: "r", LengthValues: lengths, Octave: 0}
-			smwChannel = append(smwChannel, restSmwNote)
+			smwNoteChannel = append(smwNoteChannel, restSmwNote)
 		}
-		smwTrack.ChannelTracks = append(smwTrack.ChannelTracks, smwChannel)
+
+		newTrack := ChannelTrack{
+			Notes:         smwNoteChannel,
+			DefaultSample: noteTrack.DefaultSample,
+			SampleMap:     noteTrack.SampleMap,
+		}
+		smwTrack.ChannelTracks = append(smwTrack.ChannelTracks, newTrack)
 	}
 	return smwTrack
 }
 
-func trackDone(notes []midiNote, tick uint32) bool {
+func trackDone(notes []MidiNote, tick uint32) bool {
 	if len(notes) == 0 {
 		return true
 	}
@@ -113,15 +128,15 @@ func trackDone(notes []midiNote, tick uint32) bool {
 	return tick > lastNote.StartTime+lastNote.Duration
 }
 
-func extractHighestNoteAtStartTime(notes []midiNote, tick uint32) ([]midiNote, *midiNote) {
-	var potentialNotes = make([]midiNote, 0)
+func extractHighestNoteAtStartTime(notes []MidiNote, tick uint32) ([]MidiNote, *MidiNote) {
+	var potentialNotes = make([]MidiNote, 0)
 	for _, note := range notes {
 		if note.StartTime == tick {
 			potentialNotes = append(potentialNotes, note)
 		}
 	}
 	if len(potentialNotes) > 0 {
-		highestNote := midiNote{}
+		highestNote := MidiNote{}
 		for _, note := range potentialNotes {
 			if note.Key > highestNote.Key {
 				highestNote = note
@@ -134,11 +149,11 @@ func extractHighestNoteAtStartTime(notes []midiNote, tick uint32) ([]midiNote, *
 	}
 }
 
-func removeNote(notes []midiNote, tick uint32, key uint8) []midiNote {
+func removeNote(notes []MidiNote, tick uint32, key uint8) []MidiNote {
 	for i, note := range notes {
 		if note.StartTime == tick && note.Key == key {
 			copy(notes[i:], notes[i+1:])
-			notes[len(notes)-1] = midiNote{}
+			notes[len(notes)-1] = MidiNote{}
 			notes = notes[:len(notes)-1]
 			return notes
 		}
@@ -147,7 +162,7 @@ func removeNote(notes []midiNote, tick uint32, key uint8) []midiNote {
 	return notes
 }
 
-func noteValueToSmwKey(note midiNote) (key string, octave int) {
+func noteValueToSmwKey(note MidiNote) (key string, octave int) {
 	noteValue := note.Key
 	// Lowest SMW note is g0 == 19
 	// Highest SMW note is e6 == 88
