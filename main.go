@@ -3,9 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"midi2smw/convert"
 	"midi2smw/midi"
-	"midi2smw/write"
+	"midi2smw/trackoutput"
 	"os"
 )
 
@@ -41,7 +42,13 @@ func begin(fileName string, splitTracksFlag, samplesFlag bool) {
 
 	fmt.Printf("\n\n\n========== BEGIN WRITING ==========\n\n")
 
-	write.AllTracks(tracks, midiFile.Bpm)
+	outputFile, err := os.Create("test.txt")
+	if err != nil {
+		log.Fatalf("Error opening file")
+	}
+
+	trackPrinter := trackoutput.NewPrinter(tracks, midiFile.Bpm)
+	trackPrinter.Print(outputFile)
 
 	fmt.Printf("\n\n\n========== COMPLETE ==========\n")
 }
