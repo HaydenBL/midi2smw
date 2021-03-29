@@ -5,6 +5,7 @@ import (
 	"io"
 	"math"
 	"midi2smw/convert"
+	"text/template"
 )
 
 type Printer struct {
@@ -19,9 +20,27 @@ func NewPrinter(tracks []convert.SmwTrack, bpm uint32) Printer {
 	}
 }
 
-func (p *Printer) Print(writer io.Writer) {
+func (p *Printer) Print(writer io.Writer) error {
 	config := getOutputConfig(*p)
-	fmt.Println(config) // TODO - stuff
+	t := template.Must(template.ParseFiles("trackoutput/output.tmpl"))
+	if err := t.Execute(writer, config); err != nil {
+		return err
+	}
+	return nil
+}
+
+func bpmToSmwTempo(bpm uint32) uint8 {
+	const multiplier = float64(256) / 625
+	tempo := math.Round(float64(bpm) * multiplier)
+	return uint8(tempo)
+}
+
+func write(writer io.Writer, format string, a ...interface{}) {
+	formattedString := fmt.Sprintf(format, a...)
+	_, err := writer.Write([]byte(formattedString))
+	if err != nil {
+		fmt.Printf("Error writing string: %s", formattedString)
+	}
 }
 
 func writeAllTracks(writer io.Writer, tracks []convert.SmwTrack) {
@@ -89,18 +108,4 @@ func writeChannel(writer io.Writer, channel convert.ChannelTrack) {
 		}
 	}
 	write(writer, "\n")
-}
-
-func bpmToSmwTempo(bpm uint32) uint8 {
-	const multiplier = float64(256) / 625
-	tempo := math.Round(float64(bpm) * multiplier)
-	return uint8(tempo)
-}
-
-func write(writer io.Writer, format string, a ...interface{}) {
-	formattedString := fmt.Sprintf(format, a...)
-	_, err := writer.Write([]byte(formattedString))
-	if err != nil {
-		fmt.Printf("Error writing string: %s", formattedString)
-	}
 }

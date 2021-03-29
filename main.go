@@ -42,13 +42,16 @@ func begin(fileName string, splitTracksFlag, samplesFlag bool) {
 
 	fmt.Printf("\n\n\n========== BEGIN WRITING ==========\n\n")
 
-	outputFile, err := os.Create("test.txt")
+	outputFile, err := os.Create("output.txt")
 	if err != nil {
-		log.Fatalf("Error opening file")
+		log.Fatalf("Error creating file")
 	}
+	defer outputFile.Close()
 
 	trackPrinter := trackoutput.NewPrinter(tracks, midiFile.Bpm)
-	trackPrinter.Print(outputFile)
+	if err := trackPrinter.Print(outputFile); err != nil {
+		log.Fatalf("Error writing to file %s: %s", outputFile.Name(), err)
+	}
 
 	fmt.Printf("\n\n\n========== COMPLETE ==========\n")
 }

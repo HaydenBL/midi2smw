@@ -1,0 +1,16 @@
+#amk 2
+
+#spc
+{
+  #comment "Generated with smw2midi"
+}
+
+w255
+
+{{range $i, $t := .TrackOutputs}}
+; {{.Name}}
+#{{$i}} t{{$.Bpm}}
+@{{.DefaultSample}} v150 o{{.StartOctave}}
+{{.NoteOutput}}
+
+{{- end}}

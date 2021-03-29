@@ -11,20 +11,20 @@ import (
 )
 
 type outputConfig struct {
-	bpm          uint8
-	trackOutputs []trackOutput
+	Bpm          uint8
+	TrackOutputs []trackOutput
 }
 
 type trackOutput struct {
-	name          string
-	defaultSample uint8
-	startOctave   int
-	noteOutput    string
+	Name          string
+	DefaultSample uint8
+	StartOctave   int
+	NoteOutput    string
 }
 
 func getOutputConfig(p Printer) outputConfig {
 	tracks := p.tracks
-	config := outputConfig{bpm: p.bpm}
+	config := outputConfig{Bpm: p.bpm}
 	sc := bufio.NewScanner(os.Stdin)
 
 	for i := 0; i < 8; i++ {
@@ -45,14 +45,14 @@ func getOutputConfig(p Printer) outputConfig {
 			fmt.Println("Index out of range")
 			continue
 		}
-		config.trackOutputs = append(config.trackOutputs, getTrackOutput(sc, tracks[index]))
+		config.TrackOutputs = append(config.TrackOutputs, getTrackOutput(sc, tracks[index]))
 	}
 
 	return config
 }
 
 func getTrackOutput(sc *bufio.Scanner, track convert.SmwTrack) trackOutput {
-	to := trackOutput{name: track.Name}
+	to := trackOutput{Name: track.Name}
 	for true {
 		fmt.Printf("Track %s:\n", track.Name)
 		writeTrack(os.Stdout, track)
@@ -72,9 +72,9 @@ func getTrackOutput(sc *bufio.Scanner, track convert.SmwTrack) trackOutput {
 		channel := track.ChannelTracks[index]
 		sb := strings.Builder{}
 		writeChannel(&sb, channel)
-		to.startOctave = channel.Notes[0].Octave
-		to.defaultSample = channel.DefaultSample
-		to.noteOutput = sb.String()
+		to.StartOctave = channel.Notes[0].Octave
+		to.DefaultSample = channel.DefaultSample
+		to.NoteOutput = sb.String()
 		return to
 	}
 	fmt.Println("Error getting track output")
