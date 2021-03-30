@@ -25,15 +25,21 @@ type channelOutput struct {
 func (p *Printer) getOutputConfig() outputConfig {
 	tracks := p.tracks
 	config := outputConfig{Bpm: p.bpm}
-	sc := bufio.NewScanner(os.Stdin)
+	config.ChannelOutputs = manuallySpecifyChannelOutputs(tracks)
+	return config
+}
 
-	for i := 0; i < 8; i++ {
+func manuallySpecifyChannelOutputs(tracks []convert.SmwTrack) []channelOutput {
+	sc := bufio.NewScanner(os.Stdin)
+	outputs := make([]channelOutput, 0)
+
+	for true {
 		writeAllTracks(os.Stdout, tracks)
 		fmt.Printf("Enter track to add to output (q to quit): ")
 		sc.Scan()
 		line := sc.Text()
 		if strings.ToLower(line) == "q" {
-			return config
+			return outputs
 		}
 
 		index, err := readInt(line)
@@ -45,13 +51,14 @@ func (p *Printer) getOutputConfig() outputConfig {
 			fmt.Println("Index out of range")
 			continue
 		}
-		config.ChannelOutputs = append(config.ChannelOutputs, getTrackOutput(sc, tracks[index]))
+		channel := getChannelOutput(sc, tracks[index])
+		outputs = append(outputs, channel)
 	}
 
-	return config
+	return outputs
 }
 
-func getTrackOutput(sc *bufio.Scanner, track convert.SmwTrack) channelOutput {
+func getChannelOutput(sc *bufio.Scanner, track convert.SmwTrack) channelOutput {
 	to := channelOutput{Name: track.Name}
 	for true {
 		fmt.Printf("Track %s:\n", track.Name)
