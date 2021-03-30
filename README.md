@@ -20,7 +20,6 @@ Currently, the project has no third-party dependencies, so it's pretty easily to
 locally if you want to tweak something yourself.
 
 ### TODO
-* Output to a file
 * Optimize outputs (loops, dotted notes)
 
 ### Special Thanks

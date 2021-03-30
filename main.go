@@ -11,11 +11,18 @@ import (
 )
 
 func main() {
-	fileName, splitTracksFlag, samplesFlag := parseFlags()
-	begin(fileName, splitTracksFlag, samplesFlag)
+	flags := parseFlags()
+	begin(flags)
 }
 
-func parseFlags() (fileName string, splitTracksFlag, samplesFlag bool) {
+type flagData struct {
+	inputFileName   string
+	outputFileName  string
+	splitTracksFlag bool
+	samplesFlag     bool
+}
+
+func parseFlags() flagData {
 	splitTracksFlagPtr := flag.Bool("split", false, "Specify tracks to split with note groupings")
 	samplesFlagPtr := flag.Bool("samples", false, "Specify samples for notes")
 	flag.Parse()
@@ -23,26 +30,39 @@ func parseFlags() (fileName string, splitTracksFlag, samplesFlag bool) {
 		fmt.Println("Error: no file name provided")
 		os.Exit(1)
 	}
-	return flag.Args()[0], *splitTracksFlagPtr, *samplesFlagPtr
+	var outputFileName string
+	if len(flag.Args()) > 1 {
+		outputFileName = flag.Args()[1]
+	}
+	return flagData{
+		inputFileName:   flag.Args()[0],
+		outputFileName:  outputFileName,
+		splitTracksFlag: *splitTracksFlagPtr,
+		samplesFlag:     *samplesFlagPtr,
+	}
 }
 
-func begin(fileName string, splitTracksFlag, samplesFlag bool) {
+func begin(flags flagData) {
 
 	fmt.Printf("========== BEGIN PARSING ==========\n\n")
 
-	midiFile, err := midi.Parse(fileName)
+	midiFile, err := midi.Parse(flags.inputFileName)
 	if err != nil {
-		fmt.Printf("Error parsing midi file: %s\n", fileName)
+		fmt.Printf("Error parsing midi file: %s\n", flags.inputFileName)
 		return
 	}
 
 	fmt.Printf("\n\n\n========== BEGIN CONVERTING ==========\n\n")
 
-	tracks := convert.Convert(midiFile, splitTracksFlag, samplesFlag)
+	tracks := convert.Convert(midiFile, flags.splitTracksFlag, flags.samplesFlag)
 
 	fmt.Printf("\n\n\n========== BEGIN WRITING ==========\n\n")
 
-	outputFile, err := os.Create("output.txt")
+	outputFileName := "output.txt"
+	if flags.outputFileName != "" {
+		outputFileName = flags.outputFileName
+	}
+	outputFile, err := os.Create(outputFileName)
 	if err != nil {
 		log.Fatalf("Error creating file")
 	}
@@ -52,6 +72,5 @@ func begin(fileName string, splitTracksFlag, samplesFlag bool) {
 	if err := trackPrinter.Print(outputFile); err != nil {
 		log.Fatalf("Error writing to file %s: %s", outputFile.Name(), err)
 	}
-
-	fmt.Printf("\n\n\n========== COMPLETE ==========\n")
+	fmt.Printf("\nOutput written to %s\n", outputFileName)
 }
