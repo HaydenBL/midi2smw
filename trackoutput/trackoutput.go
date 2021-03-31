@@ -107,5 +107,4 @@ func writeChannel(writer io.Writer, channel convert.ChannelTrack) {
 			lastOctave = smwNote.Octave
 		}
 	}
-	write(writer, "\n")
 }

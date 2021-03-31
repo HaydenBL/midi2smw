@@ -8,12 +8,9 @@ const outputTemplate = `#amk 2
 }
 
 w255
-
 {{range $i, $t := .ChannelOutputs}}
 ; {{.Name}}
 #{{$i}} t{{$.Bpm}}
 @{{.DefaultSample}} v150 o{{.StartOctave}}
 {{.NoteOutput}}
-
-{{- end}}
-`
+{{end}}`
