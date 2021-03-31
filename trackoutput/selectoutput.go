@@ -22,11 +22,35 @@ type channelOutput struct {
 	NoteOutput    string
 }
 
-func (p *Printer) getOutputConfig() outputConfig {
+func (p *Printer) getOutputConfig(specifyTracks bool) outputConfig {
 	tracks := p.tracks
 	config := outputConfig{Bpm: p.bpm}
-	config.ChannelOutputs = manuallySpecifyChannelOutputs(tracks)
+
+	var channelOutputs []channelOutput
+	if specifyTracks {
+		channelOutputs = manuallySpecifyChannelOutputs(tracks)
+	} else {
+		channelOutputs = getAllChannelOutputs(tracks)
+	}
+	config.ChannelOutputs = channelOutputs
+
+	if len(channelOutputs) > 8 {
+		fmt.Printf("More than 8 channels were inserted into the output.\n")
+		fmt.Printf("You will have to manually remove tracks to insert your music.\n")
+	}
+
 	return config
+}
+
+func getAllChannelOutputs(tracks []convert.SmwTrack) []channelOutput {
+	channelOutputs := make([]channelOutput, 0)
+	for _, track := range tracks {
+		for _, channel := range track.ChannelTracks {
+			co := smwChannelTrackToTrackOutput(channel, track.Name)
+			channelOutputs = append(channelOutputs, co)
+		}
+	}
+	return channelOutputs
 }
 
 func manuallySpecifyChannelOutputs(tracks []convert.SmwTrack) []channelOutput {
@@ -59,7 +83,6 @@ func manuallySpecifyChannelOutputs(tracks []convert.SmwTrack) []channelOutput {
 }
 
 func getChannelOutput(sc *bufio.Scanner, track convert.SmwTrack) channelOutput {
-	to := channelOutput{Name: track.Name}
 	for true {
 		fmt.Printf("Track %s:\n", track.Name)
 		writeTrack(os.Stdout, track)
@@ -77,15 +100,21 @@ func getChannelOutput(sc *bufio.Scanner, track convert.SmwTrack) channelOutput {
 		}
 
 		channel := track.ChannelTracks[index]
-		sb := strings.Builder{}
-		writeChannel(&sb, channel)
-		to.StartOctave = channel.Notes[0].Octave
-		to.DefaultSample = channel.DefaultSample
-		to.NoteOutput = sb.String()
-		return to
+		co := smwChannelTrackToTrackOutput(channel, track.Name)
+		return co
 	}
 	fmt.Println("Error getting track output")
-	return to
+	return channelOutput{}
+}
+
+func smwChannelTrackToTrackOutput(channelTrack convert.ChannelTrack, name string) channelOutput {
+	sb := strings.Builder{}
+	writeChannel(&sb, channelTrack)
+	co := channelOutput{Name: name}
+	co.StartOctave = channelTrack.Notes[0].Octave
+	co.DefaultSample = channelTrack.DefaultSample
+	co.NoteOutput = sb.String()
+	return co
 }
 
 func readInt(str string) (uint8, error) {

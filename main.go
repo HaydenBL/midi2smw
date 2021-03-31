@@ -18,11 +18,13 @@ func main() {
 type flagData struct {
 	inputFileName   string
 	outputFileName  string
+	specifyTracks   bool
 	splitTracksFlag bool
 	samplesFlag     bool
 }
 
 func parseFlags() flagData {
+	specifyTracksFlagPtr := flag.Bool("specifyTracks", false, "Manually specify which tracks to insert into the output")
 	splitTracksFlagPtr := flag.Bool("split", false, "Specify tracks to split with note groupings")
 	samplesFlagPtr := flag.Bool("samples", false, "Specify samples for notes")
 	flag.Parse()
@@ -37,6 +39,7 @@ func parseFlags() flagData {
 	return flagData{
 		inputFileName:   flag.Args()[0],
 		outputFileName:  outputFileName,
+		specifyTracks:   *specifyTracksFlagPtr,
 		splitTracksFlag: *splitTracksFlagPtr,
 		samplesFlag:     *samplesFlagPtr,
 	}
@@ -69,7 +72,7 @@ func begin(flags flagData) {
 	defer outputFile.Close()
 
 	trackPrinter := trackoutput.NewPrinter(tracks, midiFile.Bpm)
-	if err := trackPrinter.Print(outputFile); err != nil {
+	if err := trackPrinter.Print(outputFile, flags.specifyTracks); err != nil {
 		log.Fatalf("Error writing to file %s: %s", outputFile.Name(), err)
 	}
 	fmt.Printf("\nOutput written to %s\n", outputFileName)
