@@ -1,4 +1,6 @@
-#amk 2
+package trackoutput
+
+const outputTemplate = `#amk 2
 
 #spc
 {
@@ -14,3 +16,4 @@ w255
 {{.NoteOutput}}
 
 {{- end}}
+`

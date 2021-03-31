@@ -22,7 +22,7 @@ func NewPrinter(tracks []convert.SmwTrack, bpm uint32) Printer {
 
 func (p *Printer) Print(writer io.Writer, specifyTracks bool) error {
 	config := p.getOutputConfig(specifyTracks)
-	t := template.Must(template.ParseFiles("trackoutput/output.tmpl"))
+	t := template.Must(template.New("output").Parse(outputTemplate))
 	if err := t.Execute(writer, config); err != nil {
 		return err
 	}
