@@ -48,11 +48,11 @@ func SpecifySamples(noteTracks []NoteTrack) []NoteTrack {
 
 func promptToSetSamples(sc *bufio.Scanner, noteTracks []NoteTrack) int {
 	for true {
-		fmt.Println("-- Specify index of track to add samples (q to quit)")
 		for i, track := range noteTracks {
 			fmt.Printf("\t%d -\tName:\t\t\t%s\n", i, track.Name)
 			fmt.Printf("\t\tNotes:\t\t\t%d\n\n", len(track.Notes))
 		}
+		fmt.Printf("-- Specify index of track to add samples (q to quit): ")
 		sc.Scan()
 		line := sc.Text()
 		if strings.ToLower(line) == "q" {

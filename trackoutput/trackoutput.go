@@ -35,14 +35,6 @@ func bpmToSmwTempo(bpm uint32) uint8 {
 	return uint8(tempo)
 }
 
-func write(writer io.Writer, format string, a ...interface{}) {
-	formattedString := fmt.Sprintf(format, a...)
-	_, err := writer.Write([]byte(formattedString))
-	if err != nil {
-		fmt.Printf("Error writing string: %s", formattedString)
-	}
-}
-
 func writeAllTracks(writer io.Writer, tracks []smwtypes.SmwTrack) {
 	for i, track := range tracks {
 		fmt.Printf("---- Track %d", i)
@@ -58,53 +50,9 @@ func writeAllTracks(writer io.Writer, tracks []smwtypes.SmwTrack) {
 func writeTrack(writer io.Writer, track smwtypes.SmwTrack) {
 	for i, channel := range track.ChannelTracks {
 		fmt.Printf("-- Channel %d\n", i)
-		writeChannel(writer, channel)
-		fmt.Println()
-	}
-}
-
-func writeChannel(writer io.Writer, channel smwtypes.ChannelTrack) {
-	notes := channel.Notes
-	lastOctave := notes[0].GetOctave()
-	lastSample := channel.DefaultSample
-
-	for _, smwNote := range notes {
-		if rest, ok := smwNote.(smwtypes.Rest); ok {
-			for i, note := range rest.LengthValues {
-				if i == 0 {
-					write(writer, "r%d", note)
-				} else {
-					write(writer, "^%d", note)
-				}
-			}
-		} else {
-			if smwNote.GetOctave() > lastOctave {
-				for i := uint8(0); i < smwNote.GetOctave()-lastOctave; i++ {
-					write(writer, ">")
-				}
-			} else if smwNote.GetOctave() < lastOctave {
-				for i := uint8(0); i < lastOctave-smwNote.GetOctave(); i++ {
-					write(writer, "<")
-				}
-			}
-			for i, note := range smwNote.GetLengthValues() {
-				if i == 0 {
-					// Check if we need to swap the sample
-					sample, ok := channel.SampleMap[smwNote.GetKeyValue()]
-					if !ok {
-						sample = channel.DefaultSample
-					}
-					if sample != lastSample {
-						lastSample = sample
-						write(writer, "@%d", sample)
-					}
-
-					write(writer, "%s%d", smwNote.GetKey(), note)
-				} else {
-					write(writer, "^%d", note)
-				}
-			}
-			lastOctave = smwNote.GetOctave()
+		if _, err := writer.Write([]byte(channel.String())); err != nil {
+			fmt.Printf("Error writing track: %s", err)
 		}
+		fmt.Println()
 	}
 }

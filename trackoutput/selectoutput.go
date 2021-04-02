@@ -108,12 +108,10 @@ func getChannelOutput(sc *bufio.Scanner, track smwtypes.SmwTrack) channelOutput 
 }
 
 func smwChannelTrackToTrackOutput(channelTrack smwtypes.ChannelTrack, name string) channelOutput {
-	sb := strings.Builder{}
-	writeChannel(&sb, channelTrack)
 	co := channelOutput{Name: name}
 	co.StartOctave = channelTrack.Notes[0].GetOctave()
 	co.DefaultSample = channelTrack.DefaultSample
-	co.NoteOutput = sb.String()
+	co.NoteOutput = channelTrack.String()
 	return co
 }
 
