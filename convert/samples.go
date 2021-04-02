@@ -13,6 +13,7 @@ func GetDefaultSamples(noteTracks []NoteTrack) []NoteTrack {
 		defaultSample := promptForDefaultSample(sc, i, track.Name)
 		noteTracks[i].DefaultSample = defaultSample
 	}
+	fmt.Println()
 	return noteTracks
 }
 
@@ -83,7 +84,7 @@ func getSampleMap(sc *bufio.Scanner) map[uint8]uint8 {
 			continue
 		}
 
-		fmt.Printf("\t\tEnter sample number: ")
+		fmt.Printf("\t\t\tEnter sample number: ")
 		sc.Scan()
 		line = sc.Text()
 		sample, err := readInt(line)

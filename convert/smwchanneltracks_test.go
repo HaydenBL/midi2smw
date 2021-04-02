@@ -9,7 +9,7 @@ import (
 func TestCreateSmwChannelTrack_singleTrack(t *testing.T) {
 	var notes []MidiNote
 	var ticksPer64thNote uint32 = 30
-	noteGenerator := smwtypes.GetNoteGenerator(ticksPer64thNote)
+	noteGenerator := smwtypes.NewNoteGenerator(ticksPer64thNote)
 
 	notes = []MidiNote{
 		{
@@ -60,7 +60,7 @@ func TestCreateSmwChannelTrack_singleTrack(t *testing.T) {
 func TestCreateSmwChannelTrack_padsEndingProperly(t *testing.T) {
 	var notes []MidiNote
 	var ticksPer64thNote uint32 = 30
-	noteGenerator := smwtypes.GetNoteGenerator(ticksPer64thNote)
+	noteGenerator := smwtypes.NewNoteGenerator(ticksPer64thNote)
 
 	notes = []MidiNote{
 		{
@@ -93,7 +93,7 @@ func TestCreateSmwChannelTrack_padsEndingProperly(t *testing.T) {
 func TestCreateSmwChannelTrack_multiTrack(t *testing.T) {
 	var notes []MidiNote
 	var ticksPer64thNote uint32 = 30
-	noteGenerator := smwtypes.GetNoteGenerator(ticksPer64thNote)
+	noteGenerator := smwtypes.NewNoteGenerator(ticksPer64thNote)
 
 	notes = []MidiNote{
 		{

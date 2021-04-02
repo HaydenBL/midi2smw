@@ -11,7 +11,7 @@ type noteGenerator struct {
 	noteLengthConverter func(duration uint32) (lengths []uint8)
 }
 
-func GetNoteGenerator(ticksPer64thNote uint32) NoteGenerator {
+func NewNoteGenerator(ticksPer64thNote uint32) NoteGenerator {
 	var ng noteGenerator
 	ng.noteLengthConverter = getNoteLengthConverter(ticksPer64thNote)
 	return ng

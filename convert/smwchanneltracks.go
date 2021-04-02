@@ -8,7 +8,7 @@ import (
 func createSmwChannelTracksForAllTracks(noteTracks []NoteTrack, ticksPer64thNote uint32) []smwtypes.SmwTrack {
 	var smwTracks []smwtypes.SmwTrack
 	longestTrackLength := getLongestTrackLength(noteTracks)
-	noteGenerator := smwtypes.GetNoteGenerator(ticksPer64thNote)
+	noteGenerator := smwtypes.NewNoteGenerator(ticksPer64thNote)
 	for _, noteTrack := range noteTracks {
 		smwTrack := createSmwChannelTrack(noteTrack, longestTrackLength, noteGenerator)
 		smwTracks = append(smwTracks, smwTrack)

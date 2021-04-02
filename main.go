@@ -73,7 +73,7 @@ func begin(flags flagData) {
 
 	trackPrinter := trackoutput.NewPrinter(tracks, midiFile.Bpm)
 	if err := trackPrinter.Print(outputFile, flags.specifyTracks); err != nil {
-		log.Fatalf("Error writing to file %s: %s", outputFile.Name(), err)
+		log.Fatalf("Error writing to file %s: %s\n", outputFile.Name(), err)
 	}
 	fmt.Printf("\nOutput written to %s\n", outputFileName)
 }
