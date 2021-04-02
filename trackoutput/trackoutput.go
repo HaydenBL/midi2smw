@@ -69,8 +69,8 @@ func writeChannel(writer io.Writer, channel convert.ChannelTrack) {
 	lastSample := channel.DefaultSample
 
 	for _, smwNote := range notes {
-		if smwNote.GetKey() == "r" {
-			for i, note := range smwNote.GetLengthValues() {
+		if rest, ok := smwNote.(convert.Rest); ok {
+			for i, note := range rest.LengthValues {
 				if i == 0 {
 					write(writer, "r%d", note)
 				} else {

@@ -10,25 +10,19 @@ func TestWriteChannel(t *testing.T) {
 	channel := convert.ChannelTrack{
 		Notes: []convert.SmwNote{
 			convert.Note{
-				Key:          "c",
 				KeyValue:     24,
 				LengthValues: []uint8{8, 16},
-				Octave:       1,
 			},
 			convert.Note{
-				Key:          "d",
 				KeyValue:     38,
 				LengthValues: []uint8{16},
-				Octave:       2,
 			},
 			convert.Rest{
 				LengthValues: []uint8{2, 4},
 			},
 			convert.Note{
-				Key:          "c",
 				KeyValue:     24,
 				LengthValues: []uint8{16, 32},
-				Octave:       1,
 			},
 		},
 		DefaultSample: 0,

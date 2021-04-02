@@ -78,9 +78,13 @@ func createSmwChannelTrack(noteTrack NoteTrack, length uint32, noteLengthConvert
 					smwNoteChannel = append(smwNoteChannel, restSmwNote)
 				}
 			}
-			key, octave := noteValueToSmwKey(*activeNote)
+			var smwNote SmwNote
 			lengths := noteLengthConverter(activeNote.Duration)
-			smwNote := Note{key, activeNote.Key, lengths, octave}
+			if noteValueWithinSmwRange(activeNote.Key) {
+				smwNote = Note{activeNote.Key, lengths}
+			} else {
+				smwNote = Rest{lengths}
+			}
 			smwNoteChannel = append(smwNoteChannel, smwNote)
 			lastNoteEndTime = activeNote.StartTime + activeNote.Duration
 		}
@@ -142,19 +146,6 @@ func removeNote(notes []MidiNote, tick uint32, key uint8) []MidiNote {
 	}
 	fmt.Printf("Could not remove note with start time %d, key %d", tick, key)
 	return notes
-}
-
-func noteValueToSmwKey(note MidiNote) (key string, octave uint8) {
-	noteValue := note.Key
-	// Lowest SMW note is g0 == 19
-	// Highest SMW note is e6 == 88
-	if noteValue < 19 || noteValue > 88 {
-		fmt.Printf("Error, cannot convert note value %d to SMW note (out of range). Inserting rest\n", noteValue)
-		return "r", 0
-	}
-	key = noteDict[noteValue%12]
-	octave = noteValue/12 - 1
-	return key, octave
 }
 
 func getNoteLengthConverter(ticksPer64thNote uint32) func(duration uint32) (lengths []uint8) {

@@ -30,25 +30,19 @@ func TestCreateSmwChannelTrack_singleTrack(t *testing.T) {
 
 	expected := []SmwNote{
 		Note{
-			Key:          "c",
 			KeyValue:     24,
 			LengthValues: []uint8{64},
-			Octave:       1,
 		},
 		Note{
-			Key:          "c",
 			KeyValue:     24,
 			LengthValues: []uint8{32},
-			Octave:       1,
 		},
 		Rest{
 			LengthValues: []uint8{32},
 		},
 		Note{
-			Key:          "c",
 			KeyValue:     24,
 			LengthValues: []uint8{32},
-			Octave:       1,
 		},
 	}
 
@@ -77,10 +71,8 @@ func TestCreateSmwChannelTrack_padsEndingProperly(t *testing.T) {
 
 	expected := []SmwNote{
 		Note{
-			Key:          "c",
 			KeyValue:     24,
 			LengthValues: []uint8{64},
-			Octave:       1,
 		},
 		Rest{
 			LengthValues: []uint8{64},
@@ -122,16 +114,12 @@ func TestCreateSmwChannelTrack_multiTrack(t *testing.T) {
 
 	expectedTrack1 := []SmwNote{
 		Note{
-			Key:          "c",
 			KeyValue:     24,
 			LengthValues: []uint8{32},
-			Octave:       1,
 		},
 		Note{
-			Key:          "c",
 			KeyValue:     24,
 			LengthValues: []uint8{32},
-			Octave:       1,
 		},
 	}
 
@@ -140,10 +128,8 @@ func TestCreateSmwChannelTrack_multiTrack(t *testing.T) {
 			LengthValues: []uint8{64},
 		},
 		Note{
-			Key:          "c",
 			KeyValue:     24,
 			LengthValues: []uint8{32},
-			Octave:       1,
 		},
 		Rest{
 			LengthValues: []uint8{64},
@@ -162,26 +148,26 @@ func TestCreateSmwChannelTrack_multiTrack(t *testing.T) {
 	}
 }
 
-func TestNoteValueToSmwKey(t *testing.T) {
+func TestGetKeyFromKeyValue(t *testing.T) {
 	var k uint8
 	// too low for SMW note
 	for k = 0; k < 19; k++ {
-		key, octave := noteValueToSmwKey(MidiNote{Key: k})
-		if key != "r" || octave != 0 {
+		key := getKeyFromKeyValue(k)
+		if key != "r" {
 			t.Fatalf("Should error when key value too low")
 		}
 	}
 	// valid SMW note range
 	for k = 19; k < 89; k++ {
-		key, _ := noteValueToSmwKey(MidiNote{Key: k})
+		key := getKeyFromKeyValue(k)
 		if key == "r" {
 			t.Fatalf("Shouldn't error when key value is within range")
 		}
 	}
 	// too high for SMW note
 	for k = 89; k < 128; k++ {
-		key, octave := noteValueToSmwKey(MidiNote{Key: k})
-		if key != "r" || octave != 0 {
+		key := getKeyFromKeyValue(k)
+		if key != "r" {
 			t.Fatalf("Should error when key value too high")
 		}
 	}
