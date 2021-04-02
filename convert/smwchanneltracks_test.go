@@ -9,7 +9,7 @@ import (
 func TestCreateSmwChannelTrack_singleTrack(t *testing.T) {
 	var notes []MidiNote
 	var ticksPer64thNote uint32 = 30
-	noteLengthConverter := getNoteLengthConverter(ticksPer64thNote)
+	noteGenerator := smwtypes.GetNoteGenerator(ticksPer64thNote)
 
 	notes = []MidiNote{
 		{
@@ -47,7 +47,7 @@ func TestCreateSmwChannelTrack_singleTrack(t *testing.T) {
 		},
 	}
 
-	smwNotes := createSmwChannelTrack(NoteTrack{Notes: notes}, 210, noteLengthConverter)
+	smwNotes := createSmwChannelTrack(NoteTrack{Notes: notes}, 210, noteGenerator)
 	if len(smwNotes.ChannelTracks) != 1 {
 		t.Fatalf("Expected 1 track, got %d", len(smwNotes.ChannelTracks))
 	}
@@ -60,7 +60,7 @@ func TestCreateSmwChannelTrack_singleTrack(t *testing.T) {
 func TestCreateSmwChannelTrack_padsEndingProperly(t *testing.T) {
 	var notes []MidiNote
 	var ticksPer64thNote uint32 = 30
-	noteLengthConverter := getNoteLengthConverter(ticksPer64thNote)
+	noteGenerator := smwtypes.GetNoteGenerator(ticksPer64thNote)
 
 	notes = []MidiNote{
 		{
@@ -80,7 +80,7 @@ func TestCreateSmwChannelTrack_padsEndingProperly(t *testing.T) {
 		},
 	}
 
-	smwNotes := createSmwChannelTrack(NoteTrack{Notes: notes}, 60, noteLengthConverter)
+	smwNotes := createSmwChannelTrack(NoteTrack{Notes: notes}, 60, noteGenerator)
 	if len(smwNotes.ChannelTracks) != 1 {
 		t.Fatalf("Expected 1 track, got %d", len(smwNotes.ChannelTracks))
 	}
@@ -93,7 +93,7 @@ func TestCreateSmwChannelTrack_padsEndingProperly(t *testing.T) {
 func TestCreateSmwChannelTrack_multiTrack(t *testing.T) {
 	var notes []MidiNote
 	var ticksPer64thNote uint32 = 30
-	noteLengthConverter := getNoteLengthConverter(ticksPer64thNote)
+	noteGenerator := smwtypes.GetNoteGenerator(ticksPer64thNote)
 
 	notes = []MidiNote{
 		{
@@ -137,7 +137,7 @@ func TestCreateSmwChannelTrack_multiTrack(t *testing.T) {
 		},
 	}
 
-	smwNotes := createSmwChannelTrack(NoteTrack{Notes: notes}, 120, noteLengthConverter)
+	smwNotes := createSmwChannelTrack(NoteTrack{Notes: notes}, 120, noteGenerator)
 	if len(smwNotes.ChannelTracks) != 2 {
 		t.Fatalf("Expected 2 tracks, got %d", len(smwNotes.ChannelTracks))
 	}

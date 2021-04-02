@@ -1,9 +1,5 @@
 package smwtypes
 
-import (
-	"fmt"
-)
-
 var noteDict = map[uint8]string{
 	0:  "c",
 	1:  "c+",
@@ -80,26 +76,4 @@ func (r Rest) GetOctave() uint8 {
 
 func (r Rest) GetLengthValues() []uint8 {
 	return r.LengthValues
-}
-
-func getKeyFromKeyValue(noteValue uint8) string {
-	if !NoteValueWithinSmwRange(noteValue) {
-		fmt.Printf("ERROR: note value %d not in SMW range. Using rest\n", noteValue)
-		return "r"
-	}
-	return noteDict[noteValue%12]
-}
-
-func getOctaveFromKeyValue(noteValue uint8) uint8 {
-	if !NoteValueWithinSmwRange(noteValue) {
-		fmt.Printf("ERROR: note value %d note in SMW range. Using 0\n", noteValue)
-		return 0
-	}
-	return noteValue/12 - 1
-}
-
-func NoteValueWithinSmwRange(noteValue uint8) bool {
-	// Lowest SMW note is g0 == 19
-	// Highest SMW note is e6 == 88
-	return noteValue >= 19 && noteValue <= 88
 }
