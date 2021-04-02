@@ -4,25 +4,7 @@ import (
 	"fmt"
 )
 
-type SmwNote struct {
-	Key          string
-	KeyValue     uint8
-	LengthValues []uint8
-	Octave       int
-}
-
-type ChannelTrack struct {
-	Notes         []SmwNote
-	DefaultSample uint8
-	SampleMap     map[uint8]uint8
-}
-
-type SmwTrack struct {
-	Name          string
-	ChannelTracks []ChannelTrack // if a midi track has chords/overlapping notes, we'll throw them into multiple channels
-}
-
-var noteDict = map[int]string{
+var noteDict = map[uint8]string{
 	0:  "c",
 	1:  "c+",
 	2:  "d",
@@ -92,13 +74,13 @@ func createSmwChannelTrack(noteTrack NoteTrack, length uint32, noteLengthConvert
 				restLength := tick - lastNoteEndTime
 				if restLength != 0 {
 					lengths := noteLengthConverter(restLength)
-					restSmwNote := SmwNote{Key: "r", LengthValues: lengths, Octave: 0}
+					restSmwNote := Rest{lengths}
 					smwNoteChannel = append(smwNoteChannel, restSmwNote)
 				}
 			}
 			key, octave := noteValueToSmwKey(*activeNote)
 			lengths := noteLengthConverter(activeNote.Duration)
-			smwNote := SmwNote{key, activeNote.Key, lengths, octave}
+			smwNote := Note{key, activeNote.Key, lengths, octave}
 			smwNoteChannel = append(smwNoteChannel, smwNote)
 			lastNoteEndTime = activeNote.StartTime + activeNote.Duration
 		}
@@ -106,7 +88,7 @@ func createSmwChannelTrack(noteTrack NoteTrack, length uint32, noteLengthConvert
 			// pad out ending with rest so we don't prematurely loop when a track ends
 			restLength := length - lastNoteEndTime
 			lengths := noteLengthConverter(restLength)
-			restSmwNote := SmwNote{Key: "r", LengthValues: lengths, Octave: 0}
+			restSmwNote := Rest{lengths}
 			smwNoteChannel = append(smwNoteChannel, restSmwNote)
 		}
 
@@ -162,7 +144,7 @@ func removeNote(notes []MidiNote, tick uint32, key uint8) []MidiNote {
 	return notes
 }
 
-func noteValueToSmwKey(note MidiNote) (key string, octave int) {
+func noteValueToSmwKey(note MidiNote) (key string, octave uint8) {
 	noteValue := note.Key
 	// Lowest SMW note is g0 == 19
 	// Highest SMW note is e6 == 88
@@ -170,8 +152,8 @@ func noteValueToSmwKey(note MidiNote) (key string, octave int) {
 		fmt.Printf("Error, cannot convert note value %d to SMW note (out of range). Inserting rest\n", noteValue)
 		return "r", 0
 	}
-	key = noteDict[int(noteValue%12)]
-	octave = int(noteValue/12) - 1
+	key = noteDict[noteValue%12]
+	octave = noteValue/12 - 1
 	return key, octave
 }
 

@@ -24,7 +24,7 @@ func readLineOfUInt8s(str string) ([]uint8, error) {
 	var num64 uint64
 	var err error
 
-	numStrings := strings.Split(str, " ")
+	numStrings := strings.Fields(str)
 	var nums = make([]uint8, 0)
 	for _, numStr := range numStrings {
 		if num64, err = strconv.ParseUint(numStr, 10, 8); err != nil {

@@ -18,7 +18,7 @@ type outputConfig struct {
 type channelOutput struct {
 	Name          string
 	DefaultSample uint8
-	StartOctave   int
+	StartOctave   uint8
 	NoteOutput    string
 }
 
@@ -111,7 +111,7 @@ func smwChannelTrackToTrackOutput(channelTrack convert.ChannelTrack, name string
 	sb := strings.Builder{}
 	writeChannel(&sb, channelTrack)
 	co := channelOutput{Name: name}
-	co.StartOctave = channelTrack.Notes[0].Octave
+	co.StartOctave = channelTrack.Notes[0].Octave()
 	co.DefaultSample = channelTrack.DefaultSample
 	co.NoteOutput = sb.String()
 	return co

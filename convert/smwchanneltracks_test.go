@@ -29,28 +29,26 @@ func TestCreateSmwChannelTrack_singleTrack(t *testing.T) {
 	}
 
 	expected := []SmwNote{
-		{
-			Key:          "c",
-			KeyValue:     24,
-			LengthValues: []uint8{64},
-			Octave:       1,
+		Note{
+			key:          "c",
+			keyValue:     24,
+			lengthValues: []uint8{64},
+			octave:       1,
 		},
-		{
-			Key:          "c",
-			KeyValue:     24,
-			LengthValues: []uint8{32},
-			Octave:       1,
+		Note{
+			key:          "c",
+			keyValue:     24,
+			lengthValues: []uint8{32},
+			octave:       1,
 		},
-		{
-			Key:          "r",
-			LengthValues: []uint8{32},
-			Octave:       0,
+		Rest{
+			lengthValues: []uint8{32},
 		},
-		{
-			Key:          "c",
-			KeyValue:     24,
-			LengthValues: []uint8{32},
-			Octave:       1,
+		Note{
+			key:          "c",
+			keyValue:     24,
+			lengthValues: []uint8{32},
+			octave:       1,
 		},
 	}
 
@@ -78,16 +76,14 @@ func TestCreateSmwChannelTrack_padsEndingProperly(t *testing.T) {
 	}
 
 	expected := []SmwNote{
-		{
-			Key:          "c",
-			KeyValue:     24,
-			LengthValues: []uint8{64},
-			Octave:       1,
+		Note{
+			key:          "c",
+			keyValue:     24,
+			lengthValues: []uint8{64},
+			octave:       1,
 		},
-		{
-			Key:          "r",
-			LengthValues: []uint8{64},
-			Octave:       0,
+		Rest{
+			lengthValues: []uint8{64},
 		},
 	}
 
@@ -125,36 +121,32 @@ func TestCreateSmwChannelTrack_multiTrack(t *testing.T) {
 	}
 
 	expectedTrack1 := []SmwNote{
-		{
-			Key:          "c",
-			KeyValue:     24,
-			LengthValues: []uint8{32},
-			Octave:       1,
+		Note{
+			key:          "c",
+			keyValue:     24,
+			lengthValues: []uint8{32},
+			octave:       1,
 		},
-		{
-			Key:          "c",
-			KeyValue:     24,
-			LengthValues: []uint8{32},
-			Octave:       1,
+		Note{
+			key:          "c",
+			keyValue:     24,
+			lengthValues: []uint8{32},
+			octave:       1,
 		},
 	}
 
 	expectedTrack2 := []SmwNote{
-		{
-			Key:          "r",
-			LengthValues: []uint8{64},
-			Octave:       0,
+		Rest{
+			lengthValues: []uint8{64},
 		},
-		{
-			Key:          "c",
-			KeyValue:     24,
-			LengthValues: []uint8{32},
-			Octave:       1,
+		Note{
+			key:          "c",
+			keyValue:     24,
+			lengthValues: []uint8{32},
+			octave:       1,
 		},
-		{
-			Key:          "r",
-			LengthValues: []uint8{64},
-			Octave:       0,
+		Rest{
+			lengthValues: []uint8{64},
 		},
 	}
 
