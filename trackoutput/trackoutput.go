@@ -65,12 +65,12 @@ func writeTrack(writer io.Writer, track convert.SmwTrack) {
 
 func writeChannel(writer io.Writer, channel convert.ChannelTrack) {
 	notes := channel.Notes
-	lastOctave := notes[0].Octave()
+	lastOctave := notes[0].GetOctave()
 	lastSample := channel.DefaultSample
 
 	for _, smwNote := range notes {
-		if smwNote.Key() == "r" {
-			for i, note := range smwNote.LengthValues() {
+		if smwNote.GetKey() == "r" {
+			for i, note := range smwNote.GetLengthValues() {
 				if i == 0 {
 					write(writer, "r%d", note)
 				} else {
@@ -78,19 +78,19 @@ func writeChannel(writer io.Writer, channel convert.ChannelTrack) {
 				}
 			}
 		} else {
-			if smwNote.Octave() > lastOctave {
-				for i := uint8(0); i < smwNote.Octave()-lastOctave; i++ {
+			if smwNote.GetOctave() > lastOctave {
+				for i := uint8(0); i < smwNote.GetOctave()-lastOctave; i++ {
 					write(writer, ">")
 				}
-			} else if smwNote.Octave() < lastOctave {
-				for i := uint8(0); i < lastOctave-smwNote.Octave(); i++ {
+			} else if smwNote.GetOctave() < lastOctave {
+				for i := uint8(0); i < lastOctave-smwNote.GetOctave(); i++ {
 					write(writer, "<")
 				}
 			}
-			for i, note := range smwNote.LengthValues() {
+			for i, note := range smwNote.GetLengthValues() {
 				if i == 0 {
 					// Check if we need to swap the sample
-					sample, ok := channel.SampleMap[smwNote.KeyValue()]
+					sample, ok := channel.SampleMap[smwNote.GetKeyValue()]
 					if !ok {
 						sample = channel.DefaultSample
 					}
@@ -99,12 +99,12 @@ func writeChannel(writer io.Writer, channel convert.ChannelTrack) {
 						write(writer, "@%d", sample)
 					}
 
-					write(writer, "%s%d", smwNote.Key(), note)
+					write(writer, "%s%d", smwNote.GetKey(), note)
 				} else {
 					write(writer, "^%d", note)
 				}
 			}
-			lastOctave = smwNote.Octave()
+			lastOctave = smwNote.GetOctave()
 		}
 	}
 }

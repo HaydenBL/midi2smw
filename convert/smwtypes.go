@@ -12,55 +12,55 @@ type ChannelTrack struct {
 }
 
 type SmwNote interface {
-	Key() string
-	Octave() uint8
-	KeyValue() uint8
-	LengthValues() []uint8
+	GetKey() string
+	GetOctave() uint8
+	GetKeyValue() uint8
+	GetLengthValues() []uint8
 }
 
 // An actual note to be played (i.e. not a rest)
 // Implements the SmwNote interface
 type Note struct {
-	key          string
-	keyValue     uint8
-	lengthValues []uint8
-	octave       uint8
+	Key          string
+	KeyValue     uint8
+	LengthValues []uint8
+	Octave       uint8
 }
 
-func (n Note) Key() string {
-	return n.key
+func (n Note) GetKey() string {
+	return n.Key
 }
 
-func (n Note) KeyValue() uint8 {
-	return n.keyValue
+func (n Note) GetKeyValue() uint8 {
+	return n.KeyValue
 }
 
-func (n Note) Octave() uint8 {
-	return n.octave
+func (n Note) GetOctave() uint8 {
+	return n.Octave
 }
 
-func (n Note) LengthValues() []uint8 {
-	return n.lengthValues
+func (n Note) GetLengthValues() []uint8 {
+	return n.LengthValues
 }
 
-// An rest note to be played (i.e. not a rest)
+// An rest note to be played
 // Implements the SmwNote interface
 type Rest struct {
-	lengthValues []uint8
+	LengthValues []uint8
 }
 
-func (r Rest) Key() string {
+func (r Rest) GetKey() string {
 	return "r"
 }
 
-func (r Rest) KeyValue() uint8 {
+func (r Rest) GetKeyValue() uint8 {
 	return 0
 }
 
-func (r Rest) Octave() uint8 {
+func (r Rest) GetOctave() uint8 {
 	return 0
 }
 
-func (r Rest) LengthValues() []uint8 {
-	return r.lengthValues
+func (r Rest) GetLengthValues() []uint8 {
+	return r.LengthValues
 }

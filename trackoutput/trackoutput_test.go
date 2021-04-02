@@ -9,26 +9,26 @@ import (
 func TestWriteChannel(t *testing.T) {
 	channel := convert.ChannelTrack{
 		Notes: []convert.SmwNote{
-			testNote{
-				key:          "c",
-				keyValue:     24,
-				lengthValues: []uint8{8, 16},
-				octave:       1,
+			convert.Note{
+				Key:          "c",
+				KeyValue:     24,
+				LengthValues: []uint8{8, 16},
+				Octave:       1,
 			},
-			testNote{
-				key:          "d",
-				keyValue:     38,
-				lengthValues: []uint8{16},
-				octave:       2,
+			convert.Note{
+				Key:          "d",
+				KeyValue:     38,
+				LengthValues: []uint8{16},
+				Octave:       2,
 			},
-			testRest{
-				lengthValues: []uint8{2, 4},
+			convert.Rest{
+				LengthValues: []uint8{2, 4},
 			},
-			testNote{
-				key:          "c",
-				keyValue:     24,
-				lengthValues: []uint8{16, 32},
-				octave:       1,
+			convert.Note{
+				Key:          "c",
+				KeyValue:     24,
+				LengthValues: []uint8{16, 32},
+				Octave:       1,
 			},
 		},
 		DefaultSample: 0,
@@ -45,49 +45,4 @@ func TestWriteChannel(t *testing.T) {
 	if sb.String() != expectedString {
 		t.Fatalf("Error in track output:\nExpected:\t%s\nActual:\t\t%s", expectedString, sb.String())
 	}
-}
-
-// Re-implementing structs to implement SmwNote for these tests
-// Don't like this but whatever
-type testNote struct {
-	key          string
-	keyValue     uint8
-	lengthValues []uint8
-	octave       uint8
-}
-
-func (n testNote) Key() string {
-	return n.key
-}
-
-func (n testNote) KeyValue() uint8 {
-	return n.keyValue
-}
-
-func (n testNote) Octave() uint8 {
-	return n.octave
-}
-
-func (n testNote) LengthValues() []uint8 {
-	return n.lengthValues
-}
-
-type testRest struct {
-	lengthValues []uint8
-}
-
-func (r testRest) Key() string {
-	return "r"
-}
-
-func (r testRest) KeyValue() uint8 {
-	return 0
-}
-
-func (r testRest) Octave() uint8 {
-	return 0
-}
-
-func (r testRest) LengthValues() []uint8 {
-	return r.lengthValues
 }
