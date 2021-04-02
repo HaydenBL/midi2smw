@@ -2,25 +2,11 @@ package convert
 
 import (
 	"fmt"
+	"midi2smw/smwtypes"
 )
 
-var noteDict = map[uint8]string{
-	0:  "c",
-	1:  "c+",
-	2:  "d",
-	3:  "d+",
-	4:  "e",
-	5:  "f",
-	6:  "f+",
-	7:  "g",
-	8:  "g+",
-	9:  "a",
-	10: "a+",
-	11: "b",
-}
-
-func createSmwChannelTracksForAllTracks(noteTracks []NoteTrack, ticksPer64thNote uint32) []SmwTrack {
-	var smwTracks []SmwTrack
+func createSmwChannelTracksForAllTracks(noteTracks []NoteTrack, ticksPer64thNote uint32) []smwtypes.SmwTrack {
+	var smwTracks []smwtypes.SmwTrack
 	longestTrackLength := getLongestTrackLength(noteTracks)
 	noteLengthConverter := getNoteLengthConverter(ticksPer64thNote)
 	for _, noteTrack := range noteTracks {
@@ -48,13 +34,13 @@ func getTrackLength(track NoteTrack) uint32 {
 	return lastNote.StartTime + lastNote.Duration
 }
 
-func createSmwChannelTrack(noteTrack NoteTrack, length uint32, noteLengthConverter func(uint32) []uint8) SmwTrack {
-	var smwTrack SmwTrack
+func createSmwChannelTrack(noteTrack NoteTrack, length uint32, noteLengthConverter func(uint32) []uint8) smwtypes.SmwTrack {
+	var smwTrack smwtypes.SmwTrack
 	smwTrack.Name = noteTrack.Name
 	notes := noteTrack.Notes
 	// scan through track and create SMW channels until until no more notes
 	for len(notes) > 0 {
-		var smwNoteChannel []SmwNote
+		var smwNoteChannel []smwtypes.SmwNote
 		var tick, lastNoteEndTime uint32
 		var activeNote *MidiNote
 
@@ -74,16 +60,16 @@ func createSmwChannelTrack(noteTrack NoteTrack, length uint32, noteLengthConvert
 				restLength := tick - lastNoteEndTime
 				if restLength != 0 {
 					lengths := noteLengthConverter(restLength)
-					restSmwNote := Rest{lengths}
+					restSmwNote := smwtypes.Rest{LengthValues: lengths}
 					smwNoteChannel = append(smwNoteChannel, restSmwNote)
 				}
 			}
-			var smwNote SmwNote
+			var smwNote smwtypes.SmwNote
 			lengths := noteLengthConverter(activeNote.Duration)
-			if noteValueWithinSmwRange(activeNote.Key) {
-				smwNote = Note{activeNote.Key, lengths}
+			if smwtypes.NoteValueWithinSmwRange(activeNote.Key) {
+				smwNote = smwtypes.Note{KeyValue: activeNote.Key, LengthValues: lengths}
 			} else {
-				smwNote = Rest{lengths}
+				smwNote = smwtypes.Rest{LengthValues: lengths}
 			}
 			smwNoteChannel = append(smwNoteChannel, smwNote)
 			lastNoteEndTime = activeNote.StartTime + activeNote.Duration
@@ -92,11 +78,11 @@ func createSmwChannelTrack(noteTrack NoteTrack, length uint32, noteLengthConvert
 			// pad out ending with rest so we don't prematurely loop when a track ends
 			restLength := length - lastNoteEndTime
 			lengths := noteLengthConverter(restLength)
-			restSmwNote := Rest{lengths}
+			restSmwNote := smwtypes.Rest{LengthValues: lengths}
 			smwNoteChannel = append(smwNoteChannel, restSmwNote)
 		}
 
-		newTrack := ChannelTrack{
+		newTrack := smwtypes.ChannelTrack{
 			Notes:         smwNoteChannel,
 			DefaultSample: noteTrack.DefaultSample,
 			SampleMap:     noteTrack.SampleMap,

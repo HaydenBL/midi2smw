@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"midi2smw/convert"
+	"midi2smw/smwtypes"
 	"os"
 	"strconv"
 	"strings"
@@ -42,7 +42,7 @@ func (p *Printer) getOutputConfig(specifyTracks bool) outputConfig {
 	return config
 }
 
-func getAllChannelOutputs(tracks []convert.SmwTrack) []channelOutput {
+func getAllChannelOutputs(tracks []smwtypes.SmwTrack) []channelOutput {
 	channelOutputs := make([]channelOutput, 0)
 	for _, track := range tracks {
 		for _, channel := range track.ChannelTracks {
@@ -53,7 +53,7 @@ func getAllChannelOutputs(tracks []convert.SmwTrack) []channelOutput {
 	return channelOutputs
 }
 
-func manuallySpecifyChannelOutputs(tracks []convert.SmwTrack) []channelOutput {
+func manuallySpecifyChannelOutputs(tracks []smwtypes.SmwTrack) []channelOutput {
 	sc := bufio.NewScanner(os.Stdin)
 	outputs := make([]channelOutput, 0)
 
@@ -82,7 +82,7 @@ func manuallySpecifyChannelOutputs(tracks []convert.SmwTrack) []channelOutput {
 	return outputs
 }
 
-func getChannelOutput(sc *bufio.Scanner, track convert.SmwTrack) channelOutput {
+func getChannelOutput(sc *bufio.Scanner, track smwtypes.SmwTrack) channelOutput {
 	for true {
 		fmt.Printf("Track %s:\n", track.Name)
 		writeTrack(os.Stdout, track)
@@ -107,7 +107,7 @@ func getChannelOutput(sc *bufio.Scanner, track convert.SmwTrack) channelOutput {
 	return channelOutput{}
 }
 
-func smwChannelTrackToTrackOutput(channelTrack convert.ChannelTrack, name string) channelOutput {
+func smwChannelTrackToTrackOutput(channelTrack smwtypes.ChannelTrack, name string) channelOutput {
 	sb := strings.Builder{}
 	writeChannel(&sb, channelTrack)
 	co := channelOutput{Name: name}

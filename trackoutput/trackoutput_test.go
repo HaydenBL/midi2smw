@@ -1,26 +1,26 @@
 package trackoutput
 
 import (
-	"midi2smw/convert"
+	"midi2smw/smwtypes"
 	"strings"
 	"testing"
 )
 
 func TestWriteChannel(t *testing.T) {
-	channel := convert.ChannelTrack{
-		Notes: []convert.SmwNote{
-			convert.Note{
+	channel := smwtypes.ChannelTrack{
+		Notes: []smwtypes.SmwNote{
+			smwtypes.Note{
 				KeyValue:     24,
 				LengthValues: []uint8{8, 16},
 			},
-			convert.Note{
+			smwtypes.Note{
 				KeyValue:     38,
 				LengthValues: []uint8{16},
 			},
-			convert.Rest{
+			smwtypes.Rest{
 				LengthValues: []uint8{2, 4},
 			},
-			convert.Note{
+			smwtypes.Note{
 				KeyValue:     24,
 				LengthValues: []uint8{16, 32},
 			},

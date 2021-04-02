@@ -4,16 +4,16 @@ import (
 	"fmt"
 	"io"
 	"math"
-	"midi2smw/convert"
+	"midi2smw/smwtypes"
 	"text/template"
 )
 
 type Printer struct {
 	bpm    uint8
-	tracks []convert.SmwTrack
+	tracks []smwtypes.SmwTrack
 }
 
-func NewPrinter(tracks []convert.SmwTrack, bpm uint32) Printer {
+func NewPrinter(tracks []smwtypes.SmwTrack, bpm uint32) Printer {
 	return Printer{
 		bpm:    bpmToSmwTempo(bpm),
 		tracks: tracks,
@@ -43,7 +43,7 @@ func write(writer io.Writer, format string, a ...interface{}) {
 	}
 }
 
-func writeAllTracks(writer io.Writer, tracks []convert.SmwTrack) {
+func writeAllTracks(writer io.Writer, tracks []smwtypes.SmwTrack) {
 	for i, track := range tracks {
 		fmt.Printf("---- Track %d", i)
 		if track.Name != "" {
@@ -55,7 +55,7 @@ func writeAllTracks(writer io.Writer, tracks []convert.SmwTrack) {
 	}
 }
 
-func writeTrack(writer io.Writer, track convert.SmwTrack) {
+func writeTrack(writer io.Writer, track smwtypes.SmwTrack) {
 	for i, channel := range track.ChannelTracks {
 		fmt.Printf("-- Channel %d\n", i)
 		writeChannel(writer, channel)
@@ -63,13 +63,13 @@ func writeTrack(writer io.Writer, track convert.SmwTrack) {
 	}
 }
 
-func writeChannel(writer io.Writer, channel convert.ChannelTrack) {
+func writeChannel(writer io.Writer, channel smwtypes.ChannelTrack) {
 	notes := channel.Notes
 	lastOctave := notes[0].GetOctave()
 	lastSample := channel.DefaultSample
 
 	for _, smwNote := range notes {
-		if rest, ok := smwNote.(convert.Rest); ok {
+		if rest, ok := smwNote.(smwtypes.Rest); ok {
 			for i, note := range rest.LengthValues {
 				if i == 0 {
 					write(writer, "r%d", note)
