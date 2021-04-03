@@ -23,7 +23,7 @@ type channelWriteContext struct {
 }
 
 func (ct ChannelTrack) String() string {
-	ctx := channelWriteContext{
+	ctx := &channelWriteContext{
 		lastOctave:    ct.Notes[0].GetOctave(),
 		lastSample:    ct.DefaultSample,
 		defaultSample: ct.DefaultSample,
@@ -33,12 +33,13 @@ func (ct ChannelTrack) String() string {
 
 	for _, smwNote := range ct.Notes {
 		if rest, ok := smwNote.(Rest); ok {
-			writeRest(rest, &ctx)
-		} else {
-			shiftOctaveIfNecessary(smwNote.GetOctave(), &ctx)
-			writeNote(smwNote, &ctx)
-			ctx.lastOctave = smwNote.GetOctave()
+			writeNote(rest, ctx)
+			continue
 		}
+		shiftOctaveIfNecessary(smwNote.GetOctave(), ctx)
+		switchSampleIfNecessary(smwNote.GetKeyValue(), ctx)
+		writeNote(smwNote, ctx)
+		ctx.lastOctave = smwNote.GetOctave()
 	}
 	return ctx.sb.String()
 }
@@ -46,15 +47,6 @@ func (ct ChannelTrack) String() string {
 func writeNote(note SmwNote, ctx *channelWriteContext) {
 	for i, length := range note.GetLengthValues() {
 		if i == 0 {
-			// Check if we need to swap the sample
-			sample, ok := ctx.sampleMap[note.GetKeyValue()]
-			if !ok {
-				sample = ctx.defaultSample
-			}
-			if sample != ctx.lastSample {
-				ctx.lastSample = sample
-				write(ctx.sb, "@%d", sample)
-			}
 			write(ctx.sb, "%s%d", note.GetKey(), length)
 		} else {
 			write(ctx.sb, "^%d", length)
@@ -62,24 +54,32 @@ func writeNote(note SmwNote, ctx *channelWriteContext) {
 	}
 }
 
-func writeRest(rest Rest, ctx *channelWriteContext) {
-	for i, length := range rest.LengthValues {
-		if i == 0 {
-			write(ctx.sb, "r%d", length)
-		} else {
-			write(ctx.sb, "^%d", length)
-		}
+func shiftOctaveIfNecessary(octave uint8, ctx *channelWriteContext) {
+	if octave == ctx.lastOctave {
+		return
+	}
+	var shiftToken string
+	if octave > ctx.lastOctave {
+		shiftToken = ">"
+	} else {
+		shiftToken = "<"
+	}
+	diff := int(octave) - int(ctx.lastOctave)
+	if diff < 0 {
+		diff = -diff
+	}
+	for i := 0; i < diff; i++ {
+		write(ctx.sb, shiftToken)
 	}
 }
 
-func shiftOctaveIfNecessary(octave uint8, ctx *channelWriteContext) {
-	if octave > ctx.lastOctave {
-		for i := uint8(0); i < octave-ctx.lastOctave; i++ {
-			write(ctx.sb, ">")
-		}
-	} else if octave < ctx.lastOctave {
-		for i := uint8(0); i < ctx.lastOctave-octave; i++ {
-			write(ctx.sb, "<")
-		}
+func switchSampleIfNecessary(keyValue uint8, ctx *channelWriteContext) {
+	sample, ok := ctx.sampleMap[keyValue]
+	if !ok {
+		sample = ctx.defaultSample
+	}
+	if sample != ctx.lastSample {
+		ctx.lastSample = sample
+		write(ctx.sb, "@%d", sample)
 	}
 }
