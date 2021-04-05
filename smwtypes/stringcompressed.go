@@ -11,23 +11,35 @@ type loopSection struct {
 }
 
 func (ct ChannelTrack) StringCompressed() string {
-	remainingNotes := ct.Notes
 	sb := &strings.Builder{}
+	remainingNotes := ct.Notes
+	previousSectionLastOctave := remainingNotes[0].GetOctave()
+	previousSectionLastSample := ct.DefaultSample
+
 	for len(remainingNotes) > 0 {
 		var section loopSection
 		section, remainingNotes = getLoopSection(remainingNotes)
-		ctx := &channelWriteContext{
-			lastOctave:    section.notes[0].GetOctave(),
-			lastSample:    ct.DefaultSample,
-			defaultSample: ct.DefaultSample,
-			sampleMap:     ct.SampleMap,
-			sb:            &strings.Builder{},
+
+		sectionFirstNote := section.notes[0]
+		sectionLastNote := section.notes[len(section.notes)-1]
+
+		sectionFirstSample := getSample(sectionFirstNote.GetKeyValue(), ct.DefaultSample, ct.SampleMap)
+		sectionLastSample := getSample(sectionLastNote.GetKeyValue(), ct.DefaultSample, ct.SampleMap)
+
+		sectionOutput := ct.stringNotes(section.notes)
+		if sectionFirstSample != previousSectionLastSample || sectionFirstSample != sectionLastSample {
+			sectionOutput = fmt.Sprintf("@%d %s", sectionFirstSample, sectionOutput)
 		}
-		sectionOutput := fmt.Sprintf("o%d %s", section.notes[0].GetOctave(), stringNotes(section.notes, ctx))
+		if sectionFirstNote.GetOctave() != previousSectionLastOctave {
+			sectionOutput = fmt.Sprintf("o%d %s", section.notes[0].GetOctave(), sectionOutput)
+		}
 		if section.loops > 1 {
 			sectionOutput = fmt.Sprintf("[%s]%d", sectionOutput, section.loops)
 		}
 		write(sb, fmt.Sprintf("%s ", sectionOutput))
+
+		previousSectionLastOctave = sectionLastNote.GetOctave()
+		previousSectionLastSample = sectionLastSample
 	}
 	return sb.String()
 }
