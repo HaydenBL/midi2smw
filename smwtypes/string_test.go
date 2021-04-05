@@ -38,20 +38,50 @@ func TestChannelTrackString(t *testing.T) {
 	}
 }
 
-func TestGetNumLoops(t *testing.T) {
-	notes := []SmwNote{
-		Note{
-			KeyValue:     24,
-			LengthValues: []uint8{8, 16},
+func TestStringCompressed(t *testing.T) {
+	channel := ChannelTrack{
+		Notes: []SmwNote{
+			Note{
+				KeyValue:     44,
+				LengthValues: []uint8{8, 16},
+			},
+			Note{
+				KeyValue:     58,
+				LengthValues: []uint8{16},
+			},
+			Rest{
+				LengthValues: []uint8{2, 4},
+			},
+			// loop break
+			Note{
+				KeyValue:     44,
+				LengthValues: []uint8{8, 16},
+			},
+			Note{
+				KeyValue:     58,
+				LengthValues: []uint8{16},
+			},
+			Rest{
+				LengthValues: []uint8{2, 4},
+			},
+			// end of loops
+			Note{
+				KeyValue:     40,
+				LengthValues: []uint8{8, 16},
+			},
 		},
-		Note{
-			KeyValue:     38,
-			LengthValues: []uint8{16},
-		},
-		Rest{
-			LengthValues: []uint8{2, 4},
+		DefaultSample: 0,
+		SampleMap: map[uint8]uint8{
+			38: 1,
 		},
 	}
+
+	result := channel.StringCompressed()
+	// TODO - finish test
+	_ = result
+}
+
+func TestGetNumLoops(t *testing.T) {
 
 	remainingTrack := []SmwNote{
 		Note{
@@ -79,12 +109,14 @@ func TestGetNumLoops(t *testing.T) {
 		},
 		// end of loops
 		Note{
-			KeyValue:     10,
+			KeyValue:     20,
 			LengthValues: []uint8{8, 16},
 		},
 	}
 
-	if getNumLoops(notes, remainingTrack) != 2 {
+	numLoops := getNumLoops(3, remainingTrack)
+
+	if numLoops != 2 {
 		log.Fatalln("getNumLoops returned unexpected value")
 	}
 }
@@ -116,7 +148,7 @@ func TestGetLoopSection(t *testing.T) {
 		},
 		// end of loops
 		Note{
-			KeyValue:     10,
+			KeyValue:     20,
 			LengthValues: []uint8{8, 16},
 		},
 	}
@@ -140,7 +172,7 @@ func TestGetLoopSection(t *testing.T) {
 
 	expectedRemainingTrack := []SmwNote{
 		Note{
-			KeyValue:     10,
+			KeyValue:     20,
 			LengthValues: []uint8{8, 16},
 		},
 	}

@@ -13,11 +13,11 @@ type loopSection struct {
 func (ct ChannelTrack) StringCompressed() string {
 	remainingNotes := ct.Notes
 	sb := &strings.Builder{}
-	for len(remainingNotes) > 1 {
+	for len(remainingNotes) > 0 {
 		var section loopSection
 		section, remainingNotes = getLoopSection(remainingNotes)
 		ctx := &channelWriteContext{
-			lastOctave:    ct.Notes[0].GetOctave(),
+			lastOctave:    section.notes[0].GetOctave(),
 			lastSample:    ct.DefaultSample,
 			defaultSample: ct.DefaultSample,
 			sampleMap:     ct.SampleMap,
@@ -27,7 +27,7 @@ func (ct ChannelTrack) StringCompressed() string {
 		if section.loops > 1 {
 			sectionOutput = fmt.Sprintf("[%s]%d", sectionOutput, section.loops)
 		}
-		write(sb, sectionOutput)
+		write(sb, fmt.Sprintf("%s ", sectionOutput))
 	}
 	return sb.String()
 }
@@ -37,28 +37,32 @@ func getLoopSection(notes []SmwNote) (loopSection, []SmwNote) {
 		loops: 1,
 		notes: []SmwNote{notes[0]},
 	}
-	current := []SmwNote{notes[0]}
-	remainingNoteTrack := notes[1:] // second item to the end
-	for len(current) <= len(notes)/2 {
-		numLoops := getNumLoops(current, remainingNoteTrack)
+	currentSliceLength := 0
+	for currentSliceLength <= len(notes)/2 {
+		numLoops := getNumLoops(currentSliceLength, notes)
 		if numLoops > longestLoopSection.loops {
-			longestLoopSection.notes = current
+			newLongestLoopNotes := notes[:currentSliceLength]
+			longestLoopSection.notes = newLongestLoopNotes
 			longestLoopSection.loops = numLoops
 		}
-		current = append(current, remainingNoteTrack[0])
-		remainingNoteTrack = remainingNoteTrack[1:]
+		currentSliceLength++
 	}
-	return longestLoopSection, notes[len(longestLoopSection.notes)-1:]
+	notesToRemove := len(longestLoopSection.notes) * longestLoopSection.loops
+	return longestLoopSection, notes[notesToRemove:]
 }
 
-func getNumLoops(notes, remainingTrack []SmwNote) int {
-	numNotes := len(notes)
+func getNumLoops(sliceLength int, track []SmwNote) int {
+	if sliceLength < 1 {
+		return 0
+	}
+	sliceToCompare := track[:sliceLength]
+	remainingTrack := track
 	count := 0
-	for numNotes <= len(remainingTrack) {
-		if !NoteSlicesEqual(notes, remainingTrack[:numNotes]) {
+	for sliceLength <= len(remainingTrack) {
+		if !NoteSlicesEqual(sliceToCompare, remainingTrack[:sliceLength]) {
 			break
 		}
-		remainingTrack = remainingTrack[numNotes:]
+		remainingTrack = remainingTrack[sliceLength:]
 		count++
 	}
 	return count
