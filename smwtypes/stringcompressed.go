@@ -30,7 +30,7 @@ func (ct ChannelTrack) StringCompressed() string {
 		if sectionFirstSample != previousSectionLastSample || sectionFirstSample != sectionLastSample {
 			sectionOutput = fmt.Sprintf("@%d %s", sectionFirstSample, sectionOutput)
 		}
-		if sectionFirstNote.GetOctave() != previousSectionLastOctave {
+		if sectionFirstNote.GetOctave() != previousSectionLastOctave || sectionFirstNote.GetOctave() != sectionLastNote.GetOctave() {
 			sectionOutput = fmt.Sprintf("o%d %s", section.notes[0].GetOctave(), sectionOutput)
 		}
 		if section.loops > 1 {
