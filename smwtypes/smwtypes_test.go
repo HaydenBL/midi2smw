@@ -26,36 +26,3 @@ func TestGetKeyFromKeyValue(t *testing.T) {
 		}
 	}
 }
-
-func TestChannelTrackString(t *testing.T) {
-	channel := ChannelTrack{
-		Notes: []SmwNote{
-			Note{
-				KeyValue:     24,
-				LengthValues: []uint8{8, 16},
-			},
-			Note{
-				KeyValue:     38,
-				LengthValues: []uint8{16},
-			},
-			Rest{
-				LengthValues: []uint8{2, 4},
-			},
-			Note{
-				KeyValue:     24,
-				LengthValues: []uint8{16, 32},
-			},
-		},
-		DefaultSample: 0,
-		SampleMap: map[uint8]uint8{
-			38: 1,
-		},
-	}
-
-	expected := "c8^16>@1d16r2^4<@0c16^32"
-	actual := channel.String()
-
-	if actual != expected {
-		t.Fatalf("Error in track output:\nExpected:\t%s\nActual:\t\t%s", expected, actual)
-	}
-}

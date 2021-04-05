@@ -31,7 +31,11 @@ func (ct ChannelTrack) String() string {
 		sb:            &strings.Builder{},
 	}
 
-	for _, smwNote := range ct.Notes {
+	return stringNotes(ct.Notes, ctx)
+}
+
+func stringNotes(notes []SmwNote, ctx *channelWriteContext) string {
+	for _, smwNote := range notes {
 		if rest, ok := smwNote.(Rest); ok {
 			writeNote(rest, ctx)
 			continue

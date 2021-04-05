@@ -33,6 +33,32 @@ type SmwNote interface {
 	GetLengthValues() []uint8
 }
 
+func NotesEqual(note1, note2 SmwNote) bool {
+	if len(note1.GetLengthValues()) != len(note2.GetLengthValues()) {
+		return false
+	}
+	for i := range note1.GetLengthValues() {
+		if note1.GetLengthValues()[i] != note2.GetLengthValues()[i] {
+			return false
+		}
+	}
+	return note1.GetKeyValue() == note2.GetKeyValue() &&
+		note1.GetKey() == note2.GetKey() &&
+		note1.GetOctave() == note2.GetOctave()
+}
+
+func NoteSlicesEqual(noteSlice1, noteSlice2 []SmwNote) bool {
+	if len(noteSlice1) != len(noteSlice2) {
+		return false
+	}
+	for i := range noteSlice1 {
+		if !NotesEqual(noteSlice1[i], noteSlice2[i]) {
+			return false
+		}
+	}
+	return true
+}
+
 // An actual note to be played (i.e. not a rest)
 // Implements the SmwNote interface
 type Note struct {

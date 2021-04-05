@@ -23,14 +23,13 @@ type channelOutput struct {
 }
 
 func (p *Printer) getOutputConfig(specifyTracks bool) outputConfig {
-	tracks := p.tracks
 	config := outputConfig{Bpm: p.bpm}
 
 	var channelOutputs []channelOutput
 	if specifyTracks {
-		channelOutputs = manuallySpecifyChannelOutputs(tracks)
+		channelOutputs = manuallySpecifyChannelOutputs(p.tracks)
 	} else {
-		channelOutputs = getAllChannelOutputs(tracks)
+		channelOutputs = getAllChannelOutputs(p.tracks)
 	}
 	config.ChannelOutputs = channelOutputs
 
@@ -108,11 +107,12 @@ func getChannelOutput(sc *bufio.Scanner, track smwtypes.SmwTrack) channelOutput 
 }
 
 func smwChannelTrackToTrackOutput(channelTrack smwtypes.ChannelTrack, name string) channelOutput {
-	co := channelOutput{Name: name}
-	co.StartOctave = channelTrack.Notes[0].GetOctave()
-	co.DefaultSample = channelTrack.DefaultSample
-	co.NoteOutput = channelTrack.String()
-	return co
+	return channelOutput{
+		Name:          name,
+		DefaultSample: channelTrack.DefaultSample,
+		StartOctave:   channelTrack.Notes[0].GetOctave(),
+		NoteOutput:    channelTrack.String(),
+	}
 }
 
 func readInt(str string) (uint8, error) {
