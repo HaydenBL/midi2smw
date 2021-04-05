@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 type outputConfig struct {
@@ -22,14 +23,14 @@ type channelOutput struct {
 	NoteOutput    string
 }
 
-func (p *Printer) getOutputConfig(specifyTracks bool) outputConfig {
+func (p *Printer) getOutputConfig(specifyTracks, loop bool) outputConfig {
 	config := outputConfig{Bpm: p.bpm}
 
 	var channelOutputs []channelOutput
 	if specifyTracks {
-		channelOutputs = manuallySpecifyChannelOutputs(p.tracks)
+		channelOutputs = manuallySpecifyChannelOutputs(p.tracks, loop)
 	} else {
-		channelOutputs = getAllChannelOutputs(p.tracks)
+		channelOutputs = getAllChannelOutputs(p.tracks, loop)
 	}
 	config.ChannelOutputs = channelOutputs
 
@@ -41,20 +42,21 @@ func (p *Printer) getOutputConfig(specifyTracks bool) outputConfig {
 	return config
 }
 
-func getAllChannelOutputs(tracks []smwtypes.SmwTrack) []channelOutput {
-	channelOutputs := make([]channelOutput, 0)
+func getAllChannelOutputs(tracks []smwtypes.SmwTrack, loop bool) []channelOutput {
+	namedChannels := make([]namedChannelTrack, 0)
 	for _, track := range tracks {
 		for _, channel := range track.ChannelTracks {
-			co := smwChannelTrackToTrackOutput(channel, track.Name)
-			channelOutputs = append(channelOutputs, co)
+			nc := namedChannelTrack{channel, track.Name}
+			namedChannels = append(namedChannels, nc)
 		}
 	}
+	channelOutputs := namedChannelTracksToSmwOutputs(namedChannels, loop)
 	return channelOutputs
 }
 
-func manuallySpecifyChannelOutputs(tracks []smwtypes.SmwTrack) []channelOutput {
+func manuallySpecifyChannelOutputs(tracks []smwtypes.SmwTrack, loop bool) []channelOutput {
 	sc := bufio.NewScanner(os.Stdin)
-	outputs := make([]channelOutput, 0)
+	namedChannels := make([]namedChannelTrack, 0)
 
 	for true {
 		writeAllTracks(os.Stdout, tracks)
@@ -62,7 +64,7 @@ func manuallySpecifyChannelOutputs(tracks []smwtypes.SmwTrack) []channelOutput {
 		sc.Scan()
 		line := sc.Text()
 		if strings.ToLower(line) == "q" {
-			return outputs
+			break
 		}
 
 		index, err := readInt(line)
@@ -74,14 +76,19 @@ func manuallySpecifyChannelOutputs(tracks []smwtypes.SmwTrack) []channelOutput {
 			fmt.Println("Index out of range")
 			continue
 		}
-		channel := getChannelOutput(sc, tracks[index])
-		outputs = append(outputs, channel)
+		namedChannel := getNamedChannelTrackFromInput(sc, tracks[index])
+		namedChannels = append(namedChannels, namedChannel)
 	}
-
+	outputs := namedChannelTracksToSmwOutputs(namedChannels, loop)
 	return outputs
 }
 
-func getChannelOutput(sc *bufio.Scanner, track smwtypes.SmwTrack) channelOutput {
+type namedChannelTrack struct {
+	smwtypes.ChannelTrack
+	Name string
+}
+
+func getNamedChannelTrackFromInput(sc *bufio.Scanner, track smwtypes.SmwTrack) namedChannelTrack {
 	for true {
 		fmt.Printf("Track %s:\n", track.Name)
 		writeTrack(os.Stdout, track)
@@ -98,20 +105,40 @@ func getChannelOutput(sc *bufio.Scanner, track smwtypes.SmwTrack) channelOutput 
 			continue
 		}
 
-		channel := track.ChannelTracks[index]
-		co := smwChannelTrackToTrackOutput(channel, track.Name)
-		return co
+		return namedChannelTrack{track.ChannelTracks[index], track.Name}
 	}
 	fmt.Println("Error getting track output")
-	return channelOutput{}
+	return namedChannelTrack{}
 }
 
-func smwChannelTrackToTrackOutput(channelTrack smwtypes.ChannelTrack, name string) channelOutput {
+func namedChannelTracksToSmwOutputs(namedChannels []namedChannelTrack, loop bool) []channelOutput {
+	wg := sync.WaitGroup{}
+	outputs := make([]channelOutput, len(namedChannels))
+	for i, channel := range namedChannels {
+		wg.Add(1)
+		go func(wg *sync.WaitGroup, nct namedChannelTrack, index int) {
+			defer wg.Done()
+			co := namedChannelTrackToChannelOutput(nct, loop)
+			outputs[index] = co
+		}(&wg, channel, i)
+	}
+	wg.Wait()
+	return outputs
+}
+
+func namedChannelTrackToChannelOutput(nct namedChannelTrack, loop bool) channelOutput {
+	var noteOutput string
+	if loop {
+		noteOutput = nct.StringCompressed()
+	} else {
+		noteOutput = nct.String()
+	}
+
 	return channelOutput{
-		Name:          name,
-		DefaultSample: channelTrack.DefaultSample,
-		StartOctave:   channelTrack.Notes[0].GetOctave(),
-		NoteOutput:    channelTrack.String(),
+		Name:          nct.Name,
+		DefaultSample: nct.DefaultSample,
+		StartOctave:   nct.Notes[0].GetOctave(),
+		NoteOutput:    noteOutput,
 	}
 }
 

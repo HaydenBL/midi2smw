@@ -20,7 +20,7 @@ Currently, the project has no third-party dependencies, so it's pretty easily to
 locally if you want to tweak something yourself.
 
 ### TODO
-* Optimize outputs (loops, dotted notes)
+* Readme documentation
 
 ### Special Thanks
 * [OneLoneCoder's video on midi parsing](https://youtu.be/040BKtnDdg0)

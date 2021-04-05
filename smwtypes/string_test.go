@@ -52,6 +52,10 @@ func TestStringCompressed(t *testing.T) {
 			Rest{
 				LengthValues: []uint8{2, 4},
 			},
+			Note{
+				KeyValue:     38,
+				LengthValues: []uint8{16},
+			},
 			// loop break
 			Note{
 				KeyValue:     44,
@@ -63,6 +67,10 @@ func TestStringCompressed(t *testing.T) {
 			},
 			Rest{
 				LengthValues: []uint8{2, 4},
+			},
+			Note{
+				KeyValue:     38,
+				LengthValues: []uint8{16},
 			},
 			// end of loops
 			Note{
@@ -76,9 +84,12 @@ func TestStringCompressed(t *testing.T) {
 		},
 	}
 
-	result := channel.StringCompressed()
-	// TODO - finish test
-	_ = result
+	expected := "[@0 g+8^16>a+16r2^4<@1d16]2 @0 e8^16 "
+	actual := channel.StringCompressed()
+
+	if actual != expected {
+		t.Fatalf("Error in compressed track output:\nExpected:\t%s\nActual:\t\t%s", expected, actual)
+	}
 }
 
 func TestGetNumLoops(t *testing.T) {
