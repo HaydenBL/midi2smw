@@ -28,7 +28,7 @@ func parseFlags() flagData {
 	specifyTracksFlagPtr := flag.Bool("specifyTracks", false, "Manually specify which tracks to insert into the output")
 	splitTracksFlagPtr := flag.Bool("split", false, "Specify tracks to split with note groupings")
 	samplesFlagPtr := flag.Bool("samples", false, "Specify samples for notes")
-	loopFlagPtr := flag.Bool("loop", true, "Print output without loops")
+	noLoopFlagPtr := flag.Bool("noLoop", false, "Print output without loops")
 	flag.Parse()
 	if len(flag.Args()) < 1 {
 		fmt.Println("Error: no file name provided")
@@ -44,7 +44,7 @@ func parseFlags() flagData {
 		specifyTracks:   *specifyTracksFlagPtr,
 		splitTracksFlag: *splitTracksFlagPtr,
 		samplesFlag:     *samplesFlagPtr,
-		loopFlag:        *loopFlagPtr,
+		loopFlag:        !*noLoopFlagPtr,
 	}
 }
 
