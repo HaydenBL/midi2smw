@@ -20,8 +20,8 @@ func NewPrinter(tracks []smwtypes.SmwTrack, bpm uint32) Printer {
 	}
 }
 
-func (p *Printer) Print(writer io.Writer, specifyTracks bool) error {
-	config := p.getOutputConfig(specifyTracks)
+func (p *Printer) Print(writer io.Writer, specifyTracks, loop bool) error {
+	config := p.getOutputConfig(specifyTracks, loop)
 	t := template.Must(template.New("output").Parse(outputTemplate))
 	if err := t.Execute(writer, config); err != nil {
 		return err

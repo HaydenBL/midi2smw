@@ -23,15 +23,23 @@ type channelWriteContext struct {
 }
 
 func (ct ChannelTrack) String() string {
+	return ct.stringNotes(ct.Notes)
+}
+
+func (ct ChannelTrack) stringNotes(notes []SmwNote) string {
+	if len(notes) == 0 {
+		return ""
+	}
+
 	ctx := &channelWriteContext{
-		lastOctave:    ct.Notes[0].GetOctave(),
+		lastOctave:    notes[0].GetOctave(),
 		lastSample:    ct.DefaultSample,
 		defaultSample: ct.DefaultSample,
 		sampleMap:     ct.SampleMap,
 		sb:            &strings.Builder{},
 	}
 
-	for _, smwNote := range ct.Notes {
+	for _, smwNote := range notes {
 		if rest, ok := smwNote.(Rest); ok {
 			writeNote(rest, ctx)
 			continue
@@ -74,12 +82,17 @@ func shiftOctaveIfNecessary(octave uint8, ctx *channelWriteContext) {
 }
 
 func switchSampleIfNecessary(keyValue uint8, ctx *channelWriteContext) {
-	sample, ok := ctx.sampleMap[keyValue]
-	if !ok {
-		sample = ctx.defaultSample
-	}
+	sample := getSample(keyValue, ctx.defaultSample, ctx.sampleMap)
 	if sample != ctx.lastSample {
 		ctx.lastSample = sample
 		write(ctx.sb, "@%d", sample)
 	}
+}
+
+func getSample(keyValue uint8, defaultSample uint8, sampleMap map[uint8]uint8) uint8 {
+	sample, ok := sampleMap[keyValue]
+	if !ok {
+		sample = defaultSample
+	}
+	return sample
 }
