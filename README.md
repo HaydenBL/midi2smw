@@ -4,23 +4,56 @@
 
 ### Overview
 
-This project's aim is to simplify the process of porting a song into Super Mario World via AddMusicK.
-It reads in a midi file, parses the events, gets out the important ones (note on/off), converts them
-into track timelines of note events, quantizes them down to the nearest 64th note (smallest note
-value SMW handles), and then prints them out in a format readable by AddMusicK. It also has some
-handling for chords/overlapping notes, by passing over a track multiple times if necessary,
-creating separate channel outputs so every note should be exported. The priority is resolved by
-whichever note started playing first, and if the notes started playing at the same time, the note
-with the higher key will be exported to the track first.
+This project's aim is to simplify the process of porting a song into Super Mario World with AddMusicK.
+It reads in a midi file, creates track timelines of note events, quantizes them down to the nearest
+64th note (smallest note value SMW handles), and then prints them out in a format readable by AddMusicK
+(including track numbers and BPM, converted to SMW tempo). The only things you might have to modify
+yourself are the channel volumes, and removing tracks if it exports more than the 8 max.
 
 It also keeps in mind the start/end time of other tracks by padding out empty space on either side
 of the track with rests so all channels will be properly synced up when played together.
 
-Currently, the project has no third-party dependencies, so it's pretty easily to get up and running
-locally if you want to tweak something yourself.
+The project has no third-party dependencies and is executed as a simple binary.
 
-### TODO
-* Readme documentation
+### Features
+
+* Overlapping notes/chords in a track will be output to separate channels, so no notes are lost. If 
+  multiples notes are playing in a track at the same time, priority is resolved by whichever note
+  started playing first, and if the notes started playing at the same time, the note with the higher 
+  key will be exported to the track first.
+* Samples can be specified for certain notes in a midi track. This is particularly useful for drum tracks,
+  where different notes are used for different drum sounds.
+* Tracks can be split by specifying specific notes in a track to split into a separate track. Again, this
+  would most likely be useful for a drum track where you want to remove a certain sound from the channel.
+* By default, output is will be compressed with loops (no guarantee it's 100% optimal) but this can be
+  disabled.
+
+### Usage
+`./midi2smw <flags> inputMidi.mid`  
+To specify an output file:  
+`./midi2smw <flags> inputMidi.mid outputFile.txt`
+
+Flags must be put before the input/output file names.  
+None of the flags have arguments, simply put them in the command, and the cli will walk you through using them.
+
+| Flag            | Description                                               |
+| --------------- | --------------------------------------------------------- |
+|`-specifyTracks` | Manually specify which tracks to insert into the output   |
+|`-split`         | Specify tracks to split with note groupings               |
+|`-samples`       | Specify samples for notes                                 |
+|`-noLoop`        | Print output without loops                                |
+
+### Limitations
+
+Currently if you have a giant rest or a long note it will output a big string of ties, such as
+`r1^1^1^1^1^1...`. If that bugs you, it shouldn't be hard to manually translate that into a loop,
+and maybe I'll just fix that at some point. It also doesn't support triplets. I haven't even looked
+into how those work in AMK, and it's possible it would take a somewhat large refactor to implement that.
+
+It's not a super intelligent algorithm, and since it's just rounding to the nearest 64th note, it's
+possible the output might be somewhat ugly. In cases like that I'd recommend modifying the midi file
+itself to fit better into SMW's limitations. Overall, output may just not be optimal for all of AddMusicK's features. I've never read all its
+documentation, and in general I don't know a ton about music porting. Hopefully it's useful to someone anyway!
 
 ### Special Thanks
 * [OneLoneCoder's video on midi parsing](https://youtu.be/040BKtnDdg0)
