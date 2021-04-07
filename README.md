@@ -13,7 +13,7 @@ yourself are the channel volumes, and removing tracks if it exports more than th
 It also keeps in mind the start/end time of other tracks by padding out empty space on either side
 of the track with rests so all channels will be properly synced up when played together.
 
-The project has no third-party dependencies and is executed as a simple binary.
+The project has no third-party dependencies and is run as a plain executable.
 
 ### Features
 
@@ -29,9 +29,9 @@ The project has no third-party dependencies and is executed as a simple binary.
   disabled.
 
 ### Usage
-`./midi2smw <flags> inputMidi.mid`  
+`midi2smw.exe <flags> inputMidi.mid`  
 To specify an output file:  
-`./midi2smw <flags> inputMidi.mid outputFile.txt`
+`midi2smw.exe <flags> inputMidi.mid outputFile.txt`
 
 Flags must be put before the input/output file names.  
 None of the flags have arguments, simply put them in the command, and the cli will walk you through using them.
