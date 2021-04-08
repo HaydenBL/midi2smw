@@ -41,7 +41,7 @@ func (ct ChannelTrack) stringNotes(notes []SmwNote) string {
 
 	for _, smwNote := range notes {
 		if rest, ok := smwNote.(Rest); ok {
-			writeNote(rest, ctx)
+			writeRest(rest, ctx)
 			continue
 		}
 		shiftOctaveIfNecessary(smwNote.GetOctave(), ctx)
@@ -53,6 +53,10 @@ func (ct ChannelTrack) stringNotes(notes []SmwNote) string {
 }
 
 func writeNote(note SmwNote, ctx *channelWriteContext) {
+	if len(note.GetLengthValues()) < 1 {
+		return
+	}
+
 	for i, length := range note.GetLengthValues() {
 		if i == 0 {
 			write(ctx.sb, "%s%d", note.GetKey(), length)
@@ -60,6 +64,30 @@ func writeNote(note SmwNote, ctx *channelWriteContext) {
 			write(ctx.sb, "^%d", length)
 		}
 	}
+}
+
+func writeRest(rest Rest, ctx *channelWriteContext) {
+	lv := rest.GetLengthValues()
+	if len(lv) >= 2 && lv[0] == lv[1] {
+		rest = writeRestSuperLoop(rest, ctx)
+	}
+	writeNote(rest, ctx)
+}
+
+func writeRestSuperLoop(rest Rest, ctx *channelWriteContext) Rest {
+	lv := rest.GetLengthValues()
+	numLoops := 1
+	for numLoops < len(lv) {
+		if lv[numLoops] != lv[numLoops-1] {
+			break
+		}
+		numLoops++
+	}
+	write(ctx.sb, " [[%s%d]]%d", rest.GetKey(), lv[0], numLoops)
+
+	remainingLengths := lv[numLoops:]
+	remainingRest := Rest{remainingLengths}
+	return remainingRest
 }
 
 func shiftOctaveIfNecessary(octave uint8, ctx *channelWriteContext) {

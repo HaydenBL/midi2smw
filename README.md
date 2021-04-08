@@ -25,8 +25,9 @@ The project has no third-party dependencies and is run as a plain executable.
   where different notes are used for different drum sounds.
 * Tracks can be split by specifying specific notes in a track to split into a separate track. Again, this
   would most likely be useful for a drum track where you want to remove a certain sound from the channel.
-* By default, output is will be compressed with loops (no guarantee it's 100% optimal) but this can be
-  disabled.
+* By default, output is be compressed with loops for repeating sections (no guarantee it's 100% optimal)
+  but this can be disabled. It will also put long rests into loops so they're not strung together with
+  a bunch of ties.
 
 ### Usage
 `midi2smw.exe <flags> inputMidi.mid`  
@@ -45,15 +46,15 @@ None of the flags have arguments, simply put them in the command, and the cli wi
 
 ### Limitations
 
-Currently if you have a giant rest or a long note it will output a big string of ties, such as
-`r1^1^1^1^1^1...`. If that bugs you, it shouldn't be hard to manually translate that into a loop,
-and maybe I'll just fix that at some point. It also doesn't support triplets. I haven't even looked
-into how those work in AMK, and it's possible it would take a somewhat large refactor to implement that.
+The program doesn't currently support triplets. I haven't even looked into how those work in AMK,
+and it's possible it would take a somewhat large refactor to implement that.
 
-It's not a super intelligent algorithm, and since it's just rounding to the nearest 64th note, it's
-possible the output might be somewhat ugly. In cases like that I'd recommend modifying the midi file
-itself to fit better into SMW's limitations. Overall, output may just not be optimal for all of AddMusicK's features. I've never read all its
-documentation, and in general I don't know a ton about music porting. Hopefully it's useful to someone anyway!
+Overall, it's not a super intelligent algorithm, and since it's just rounding to the nearest 64th note,
+it's possible the output might be somewhat ugly. In cases like that I'd recommend modifying the midi file
+itself to fit better into SMW's limitations. Generally, output may just not be optimal for all of AddMusicK's
+features. I've never read all its documentation, and in general I don't know a ton about music porting.
+
+Hopefully it's useful to someone anyway!
 
 ### Special Thanks
 * [OneLoneCoder's video on midi parsing](https://youtu.be/040BKtnDdg0)
